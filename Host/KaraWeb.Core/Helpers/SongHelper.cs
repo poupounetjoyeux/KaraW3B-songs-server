@@ -50,6 +50,25 @@ namespace KaraWeb.Core.Helpers
                 if (string.IsNullOrEmpty(song.Audio))
                 {
                     song.Errors.Add("The song audio file is mandatory (#AUDIO header)");
+                } 
+                else if (Path.IsPathFullyQualified(song.Audio))
+                {
+                    song.Errors.Add("The song audio file must be a relative path");
+                }
+
+                if (!string.IsNullOrEmpty(song.Video) && Path.IsPathFullyQualified(song.Video))
+                {
+                    song.Errors.Add("The song video file must be a relative path");
+                }
+
+                if (!string.IsNullOrEmpty(song.Cover) && Path.IsPathFullyQualified(song.Cover))
+                {
+                    song.Errors.Add("The song cover file must be a relative path");
+                }
+
+                if (!string.IsNullOrEmpty(song.Background) && Path.IsPathFullyQualified(song.Background))
+                {
+                    song.Errors.Add("The song background file must be a relative path");
                 }
 
                 if (song.NotManagedHeaders.Any())
@@ -82,6 +101,12 @@ namespace KaraWeb.Core.Helpers
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
+                    if (note.StartBeat < 1)
+                    {
+                        song.Errors.Add(
+                            $"Note {note.StartBeat} for player {note.PlayerNumber} must start at least at beat 1");
+                    }
+
                     if (!processedPlayerBeats.TryGetValue(note.PlayerNumber, out var playerProcessedBeats))
                     {
                         playerProcessedBeats = new HashSet<int>(note.StartBeat);
@@ -104,6 +129,11 @@ namespace KaraWeb.Core.Helpers
                         {
                             song.Errors.Add(
                                 $"Note on beat {note.StartBeat} for player {note.PlayerNumber} has no duration");
+                        } 
+                        else if (note.Duration.Value < 1)
+                        {
+                            song.Errors.Add(
+                                $"Note on beat {note.StartBeat} for player {note.PlayerNumber} has a duration less than 1");
                         }
 
                         if (!note.Pitch.HasValue)

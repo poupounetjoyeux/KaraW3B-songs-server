@@ -5,6 +5,7 @@
     <AssemblyName>KaraWeb.Host</AssemblyName>
     <StartupObject>KaraWeb.Host.EntryPoint</StartupObject>
     <ConfigFilesNeeded>true</ConfigFilesNeeded>
+    <ApplicationIcon>$(MSBuildThisFileDirectory)../icon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
