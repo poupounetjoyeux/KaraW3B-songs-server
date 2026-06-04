@@ -16,7 +16,7 @@ namespace KaraWeb.Shared.Helpers
     /// </summary>
     public static class SongHelper
     {
-        public static Task<ErrorsAnalyzeResult> CheckHeadersErrorsAsync(ISong song, CancellationToken cancellationToken)
+        public static Task<ErrorsAnalyzeResult> CheckHeadersErrorsAsync(IAnalyzableSong song, CancellationToken cancellationToken)
         {
             return Task.Run(() =>
             {
@@ -84,7 +84,7 @@ namespace KaraWeb.Shared.Helpers
             }, cancellationToken);
         }
 
-        public static Task<ErrorsAnalyzeResult> CheckNotesErrorsAsync(ISong song, IEnumerable<ISongNote> songNotes,
+        public static Task<ErrorsAnalyzeResult> CheckNotesErrorsAsync(IAnalyzableSong song, IEnumerable<IAnalyzableSongNote> songNotes,
             CancellationToken cancellationToken)
         {
             return Task.Run(() =>

@@ -6,7 +6,7 @@ using KaraWeb.Shared.Models.Songs.Notes;
 namespace KaraWeb.Core.Persistence.Songs
 {
     [Table("SongNotes")]
-    public sealed class SongNote : ISongNote
+    public sealed class SongNote : IAnalyzableSongNote
     {
         [Key]
         public Guid NoteId { get; set; } = Guid.NewGuid();

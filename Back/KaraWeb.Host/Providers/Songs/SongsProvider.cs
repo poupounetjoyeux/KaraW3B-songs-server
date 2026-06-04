@@ -1,19 +1,23 @@
-﻿using System;
+﻿using KaraWeb.Core.Persistence;
+using KaraWeb.Shared.Models.Songs;
+using KaraWeb.Shared.Models.Songs.Files;
+using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using KaraWeb.Core.Persistence;
 using KaraWeb.Core.Persistence.Songs;
-using KaraWeb.Shared.Models.Songs;
-using KaraWeb.Shared.Models.Songs.Notes;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
 
 namespace KaraWeb.Host.Providers.Songs
 {
     internal sealed class SongsProvider : ISongsProvider
     {
+        private readonly FileExtensionContentTypeProvider _fileExtensionContentTypeProvider = new();
         private readonly KaraWebDbContext _dbContext;
 
         public SongsProvider(KaraWebDbContext dbContext)
@@ -35,28 +39,53 @@ namespace KaraWeb.Host.Providers.Songs
 
         public async Task<DetailedSongDto> GetDetailedSongAsync(Guid songId, CancellationToken cancellationToken)
         {
-            return (await GetSongInternalAsync(songId, cancellationToken)).ToDetailedDto();
+            return (await GetSongById(songId, cancellationToken)).ToDetailedDto();
         }
 
-        public async IAsyncEnumerable<SongNoteDto> GetSongNotesAsync(Guid songId,
-            [EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            var song = await GetSongInternalAsync(songId, cancellationToken);
-            if (song == null)
-            {
-                yield break;
-            }
-
-            foreach (var note in song.Notes)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                yield return note.ToDto();
-            }
-        }
-
-        public Task<Song> GetSongInternalAsync(Guid songId, CancellationToken cancellationToken)
+        public Task<Song> GetSongById(Guid songId, CancellationToken cancellationToken)
         {
             return _dbContext.Songs.SingleOrDefaultAsync(s => s.Id == songId, cancellationToken);
+        }
+
+        public Task<FileStreamResult> GetSongFileStream(Song song, SongFileType fileType, CancellationToken cancellationToken)
+        {
+            return Task.Run(() =>
+            {
+                var songDirectory = Path.GetDirectoryName(song.SongFilePath);
+                if (songDirectory == null)
+                {
+                    return null;
+                }
+
+                var filePath = fileType switch
+                {
+                    SongFileType.Audio => song.Audio,
+                    SongFileType.Cover => song.Cover,
+                    SongFileType.Background => song.Background,
+                    SongFileType.Video => song.Video,
+                    _ => string.Empty
+                };
+
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    return null;
+                }
+
+                filePath = Path.Combine(songDirectory, filePath);
+                if (!File.Exists(filePath))
+                {
+                    return null;
+                }
+
+                var contentType = "application/octet-stream";
+                if (_fileExtensionContentTypeProvider.TryGetContentType(filePath, out var gotContentType))
+                {
+                    contentType = gotContentType;
+                }
+
+                var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                return new FileStreamResult(stream, contentType) { FileDownloadName = Path.GetFileName(filePath) };
+            }, cancellationToken);
         }
     }
 }

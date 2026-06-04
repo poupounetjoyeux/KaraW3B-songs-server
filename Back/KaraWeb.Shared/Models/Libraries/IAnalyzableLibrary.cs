@@ -2,11 +2,10 @@
 
 namespace KaraWeb.Shared.Models.Libraries
 {
-    public interface ILibrary
+    public interface IAnalyzableLibrary
     {
         Guid Id { get; }
         string Name { get; }
-        string Description { get; }
         string Path { get; }
     }
 }

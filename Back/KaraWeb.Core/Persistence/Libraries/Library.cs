@@ -6,7 +6,7 @@ using KaraWeb.Shared.Models.Libraries;
 namespace KaraWeb.Core.Persistence.Libraries
 {
     [Table("Libraries")]
-    public sealed class Library : ILibrary
+    public sealed class Library : IAnalyzableLibrary
     {
         [Key]
         public Guid Id { get; set; } = Guid.NewGuid();

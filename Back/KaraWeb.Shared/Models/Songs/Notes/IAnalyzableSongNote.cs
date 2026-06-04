@@ -1,6 +1,6 @@
 ﻿namespace KaraWeb.Shared.Models.Songs.Notes
 {
-    public interface ISongNote
+    public interface IAnalyzableSongNote
     {
         NoteType Type { get; }
         int PlayerNumber { get; }

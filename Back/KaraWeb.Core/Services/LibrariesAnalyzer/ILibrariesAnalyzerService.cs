@@ -6,7 +6,7 @@ namespace KaraWeb.Core.Services.LibrariesAnalyzer
 {
     public interface ILibrariesAnalyzerService
     {
-        Task StartLibraryAnalyzeAsync(ILibrary library, LibraryAnalyzeType analyzeType,
+        Task StartLibraryAnalyzeAsync(IAnalyzableLibrary library, LibraryAnalyzeType analyzeType,
             CancellationToken cancellationToken);
     }
 }

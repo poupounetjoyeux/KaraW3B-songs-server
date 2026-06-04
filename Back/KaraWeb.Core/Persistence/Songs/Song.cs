@@ -9,7 +9,7 @@ using KaraWeb.Shared.Models.Songs;
 namespace KaraWeb.Core.Persistence.Songs
 {
     [Table("Songs")]
-    public sealed class Song : ISong
+    public sealed class Song : IAnalyzableSong
     {
         [Key]
         public Guid Id { get; set; } = Guid.NewGuid();

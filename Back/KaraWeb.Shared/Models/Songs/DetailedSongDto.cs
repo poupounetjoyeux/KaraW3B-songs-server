@@ -6,7 +6,7 @@ namespace KaraWeb.Shared.Models.Songs
     /// <summary>
     ///     A song parsed from file with all its details
     /// </summary>
-    public sealed class DetailedSongDto : SongDtoBase, ISong
+    public sealed class DetailedSongDto : SongDtoBase, IAnalyzableSong
     {
         #region Core headers
 

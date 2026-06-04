@@ -3,7 +3,7 @@
     /// <summary>
     ///     A song's note
     /// </summary>
-    public sealed class SongNoteDto : ISongNote
+    public sealed class SongNoteDto : IAnalyzableSongNote
     {
         /// <summary>
         ///     The note's type

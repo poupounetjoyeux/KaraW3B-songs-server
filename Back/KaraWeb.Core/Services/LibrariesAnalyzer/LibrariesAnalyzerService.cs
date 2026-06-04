@@ -24,7 +24,7 @@ namespace KaraWeb.Core.Services.LibrariesAnalyzer
             _songParserService = songParserService;
         }
 
-        public async Task StartLibraryAnalyzeAsync(ILibrary library, LibraryAnalyzeType analyzeType,
+        public async Task StartLibraryAnalyzeAsync(IAnalyzableLibrary library, LibraryAnalyzeType analyzeType,
             CancellationToken cancellationToken)
         {
             // TODO: Make it background

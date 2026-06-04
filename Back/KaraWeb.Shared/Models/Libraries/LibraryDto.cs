@@ -5,7 +5,7 @@ namespace KaraWeb.Shared.Models.Libraries
     /// <summary>
     ///     A songs library pointing to a folder containing songs
     /// </summary>
-    public sealed class LibraryDto : ILibrary
+    public sealed class LibraryDto : IAnalyzableLibrary
     {
         /// <summary>
         ///     The library's ID

@@ -35,7 +35,7 @@ namespace KaraWeb.Host.Providers.Libraries
 
         public async Task<LibraryDto> GetLibraryAsync(Guid libraryId, CancellationToken cancellationToken)
         {
-            return (await GetLibraryInternalAsync(libraryId, cancellationToken)).ToDto();
+            return (await _dbContext.Libraries.SingleOrDefaultAsync(c => c.Id == libraryId, cancellationToken)).ToDto();
         }
 
         public async Task<LibraryDto> CreateLibraryAsync(LibraryCreationPayload payload,
@@ -52,30 +52,18 @@ namespace KaraWeb.Host.Providers.Libraries
             return libraryEntry.Entity.ToDto();
         }
 
-        public Task StartLibraryAnalyzeAsync(LibraryDto library, LibraryAnalyzeType libraryAnalyzeType,
+        public Task StartLibraryAnalyzeAsync(IAnalyzableLibrary library, LibraryAnalyzeType libraryAnalyzeType,
             CancellationToken cancellationToken)
         {
             return _librariesAnalyzerService.StartLibraryAnalyzeAsync(library, libraryAnalyzeType, cancellationToken);
         }
 
-        private Task<Library> GetLibraryInternalAsync(Guid libraryId, CancellationToken cancellationToken)
-        {
-            return _dbContext.Libraries.SingleOrDefaultAsync(c => c.Id == libraryId, cancellationToken);
-        }
-
         public async Task<bool> DeleteLibraryAsync(Guid libraryId, CancellationToken cancellationToken)
         {
-            var libraryToDelete = await GetLibraryInternalAsync(libraryId, cancellationToken);
-            if (libraryToDelete == null)
-            {
-                return false;
-            }
-
-            var songs = await _dbContext.Songs.Where(s => s.LibraryId == libraryId).ToListAsync(cancellationToken);
-            _dbContext.RemoveRange(songs);
-            _dbContext.Libraries.Remove(libraryToDelete);
+            var deleteCount = await _dbContext.Songs.Where(s => s.LibraryId == libraryId).ExecuteDeleteAsync(cancellationToken);
+            deleteCount += await _dbContext.Libraries.Where(l => l.Id == libraryId).ExecuteDeleteAsync(cancellationToken: cancellationToken);
             await _dbContext.SaveChangesAsync(cancellationToken);
-            return true;
+            return deleteCount > 0;
         }
     }
 }

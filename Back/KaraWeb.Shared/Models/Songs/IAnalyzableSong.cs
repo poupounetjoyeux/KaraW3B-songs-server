@@ -2,7 +2,7 @@
 
 namespace KaraWeb.Shared.Models.Songs
 {
-    public interface ISong
+    public interface IAnalyzableSong
     {
         string Encoding { get; }
         string Title { get; }
