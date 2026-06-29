@@ -15,6 +15,6 @@ namespace KaraWeb.Host.Providers.Songs
             CancellationToken cancellationToken);
 
         Task<Song> GetSongById(Guid songId, CancellationToken cancellationToken);
-        Task<FileStreamResult> GetSongFileStream(Song song, FileType fileType, CancellationToken cancellationToken);
+        Task<PhysicalFileResult> GetSongFileStream(Song song, FileType fileType, CancellationToken cancellationToken);
     }
 }

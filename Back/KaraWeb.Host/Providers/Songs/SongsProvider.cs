@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -50,12 +49,16 @@ namespace KaraWeb.Host.Providers.Songs
             return _dbContext.Songs.SingleOrDefaultAsync(s => s.Id == songId, cancellationToken);
         }
 
-        public Task<FileStreamResult> GetSongFileStream(Song song, FileType fileType,
+        public Task<PhysicalFileResult> GetSongFileStream(Song song, FileType fileType,
             CancellationToken cancellationToken)
         {
             return Task.Run(() =>
             {
                 var filePath = song.GetSongFilePath(fileType);
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    return null;
+                }
 
                 var contentType = "application/octet-stream";
                 if (_fileExtensionContentTypeProvider.TryGetContentType(filePath, out var gotContentType))
@@ -63,8 +66,7 @@ namespace KaraWeb.Host.Providers.Songs
                     contentType = gotContentType;
                 }
 
-                var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-                return new FileStreamResult(stream, contentType);
+                return new PhysicalFileResult(filePath, contentType) { EnableRangeProcessing = true };
             }, cancellationToken);
         }
     }
