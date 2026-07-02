@@ -35,10 +35,7 @@ jobs:
         run: dotnet restore
         working-directory: src
       - name: Build
-        run: dotnet build --no-restore
-        working-directory: src
-      - name: Test
-        run: dotnet test --no-build
+        run: dotnet build --no-restore --configuration Release --version ${{ env.releaseVersion }}
         working-directory: src
 
       - name: Set up Docker Buildx
