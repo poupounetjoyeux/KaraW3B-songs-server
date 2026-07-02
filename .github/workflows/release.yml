@@ -30,7 +30,7 @@ jobs:
       - name: Login to NuGet
         env:
           GIT_NUGET_API_KEY: ${{ secrets.GITHUB_TOKEN }}
-        run: dotnet nuget add source https://nuget.pkg.github.com/KaraW3B/index.json --name "KaraW3B-github" --username KaraW3B --password $GIT_NUGET_API_KEY
+        run: dotnet nuget add source https://nuget.pkg.github.com/KaraW3B/index.json --name "KaraW3B-github" --username KaraW3B --password $GIT_NUGET_API_KEY --store-password-in-clear-text
       - name: Restore dependencies
         run: dotnet restore
         working-directory: src
