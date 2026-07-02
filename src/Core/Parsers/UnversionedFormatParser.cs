@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using KaraWeb.Core.Helper;
-using KaraWeb.Core.Persistence.Models.Songs;
-using KaraWeb.Shared.Exceptions;
+using KaraW3B.SDK.Exceptions;
+using KaraW3B.Server.Core.Helper;
+using KaraW3B.Server.Core.Persistence.Models.Songs;
 
-namespace KaraWeb.Core.Parsers
+namespace KaraW3B.Server.Core.Parsers
 {
     internal sealed class UnversionedFormatParser : ParserBase
     {
@@ -51,7 +51,7 @@ namespace KaraWeb.Core.Parsers
                 case "RELATIVE":
                     if (headerValue.Equals("YES", StringComparison.InvariantCultureIgnoreCase))
                     {
-                        throw new KaraWebException(
+                        throw new KaraW3BException(
                             $"Relative mode is no more used in recent format versions.{Environment.NewLine}" +
                             $"Please avoid it since files order is less permissive and this program don't aim to support it.{Environment.NewLine}" +
                             $"You can always convert your old relative file by using UltraStar Deluxe song editor or UltraStar manager");

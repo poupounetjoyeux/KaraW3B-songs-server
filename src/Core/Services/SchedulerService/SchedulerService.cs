@@ -1,11 +1,11 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using KaraWeb.Core.Jobs;
-using KaraWeb.Shared.Helpers;
+using KaraW3B.SDK.Helpers;
+using KaraW3B.Server.Core.Jobs;
 using log4net;
 using Quartz;
 
-namespace KaraWeb.Core.Services.SchedulerService
+namespace KaraW3B.Server.Core.Services.SchedulerService
 {
     public sealed class SchedulerService : ISchedulerService
     {
@@ -16,8 +16,8 @@ namespace KaraWeb.Core.Services.SchedulerService
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             var schedulerBuilder = SchedulerBuilder.Create();
-            schedulerBuilder.SchedulerName = $"{KaraWebConstants.ApplicationName}_Scheduler";
-            schedulerBuilder.SchedulerId = $"{KaraWebConstants.ApplicationName}_Scheduler";
+            schedulerBuilder.SchedulerName = $"{KaraW3BConstants.ApplicationName}_Scheduler";
+            schedulerBuilder.SchedulerId = $"{KaraW3BConstants.ApplicationName}_Scheduler";
             _scheduler = await schedulerBuilder.UseDefaultThreadPool(x => x.MaxConcurrency = 5).BuildScheduler();
             await _scheduler.Start(cancellationToken);
             _logger.Info($"Scheduler '{_scheduler.SchedulerName}' was started");

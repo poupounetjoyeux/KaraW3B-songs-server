@@ -4,15 +4,15 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using KaraWeb.Core.Helper;
-using KaraWeb.Core.Parsers;
-using KaraWeb.Core.Persistence.Models.Songs;
-using KaraWeb.Shared;
-using KaraWeb.Shared.Exceptions;
-using KaraWeb.Shared.Helpers;
+using KaraW3B.SDK;
+using KaraW3B.SDK.Exceptions;
+using KaraW3B.SDK.Helpers;
+using KaraW3B.Server.Core.Helper;
+using KaraW3B.Server.Core.Parsers;
+using KaraW3B.Server.Core.Persistence.Models.Songs;
 using log4net;
 
-namespace KaraWeb.Core.Services.SongParser
+namespace KaraW3B.Server.Core.Services.SongParser
 {
     /// <summary>
     ///     Song parsing is based on https://github.com/UltraStar-Deluxe/format and https://usdx.eu/format/
@@ -161,7 +161,7 @@ namespace KaraWeb.Core.Services.SongParser
                 _logger.Info(
                     $"Song file '{songFile.FullName}' successfully parsed in {timeWatch.Elapsed}");
             }
-            catch (KaraWebException e)
+            catch (KaraW3BException e)
             {
                 song.AddParsingFatal(e.Message, line);
             }
@@ -237,7 +237,7 @@ namespace KaraWeb.Core.Services.SongParser
 
             if (options.EncodingHeaderLine.HasValue)
             {
-                throw new KaraWebException("The #ENCODING header is duplicated");
+                throw new KaraW3BException("The #ENCODING header is duplicated");
             }
 
             var sanitizedEncoding = EncodingHelper.SanitizeEncodingName(declaredEncoding.Groups["encoding"].Value);
@@ -274,12 +274,12 @@ namespace KaraWeb.Core.Services.SongParser
 
             if (options.VersionHeaderLine.HasValue)
             {
-                throw new KaraWebException("The #VERSION header is duplicated");
+                throw new KaraW3BException("The #VERSION header is duplicated");
             }
 
             if (!Version.TryParse(declaredVersion.Groups["version"].Value, out var version))
             {
-                throw new KaraWebException("The #VERSION header cannot be parsed. Format must be X.Y.Z");
+                throw new KaraW3BException("The #VERSION header cannot be parsed. Format must be X.Y.Z");
             }
 
             reloadOptions = options.WithVersion(version, line);

@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-namespace KaraWeb.Host.Conventions
+namespace KaraWeb.Server.Host.Conventions
 {
     public class GlobalRoutePrefixConvention : IControllerModelConvention
     {

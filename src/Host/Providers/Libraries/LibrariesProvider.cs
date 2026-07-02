@@ -4,24 +4,24 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using KaraWeb.Core.Jobs;
-using KaraWeb.Core.Persistence;
-using KaraWeb.Core.Persistence.Models.Libraries;
-using KaraWeb.Core.Services.SchedulerService;
-using KaraWeb.Core.Services.SongParser;
-using KaraWeb.Shared.Models.Libraries;
+using KaraW3B.SDK.Models.Libraries;
+using KaraW3B.Server.Core.Jobs;
+using KaraW3B.Server.Core.Persistence;
+using KaraW3B.Server.Core.Persistence.Models.Libraries;
+using KaraW3B.Server.Core.Services.SchedulerService;
+using KaraW3B.Server.Core.Services.SongParser;
 using Microsoft.EntityFrameworkCore;
 using Quartz;
 
-namespace KaraWeb.Host.Providers.Libraries
+namespace KaraWeb.Server.Host.Providers.Libraries
 {
     internal sealed class LibrariesProvider : ILibrariesProvider
     {
-        private readonly KaraWebDbContext _dbContext;
+        private readonly KaraW3BDbContext _dbContext;
         private readonly ISongParserService _songParserService;
         private readonly ISchedulerService _schedulerService;
 
-        public LibrariesProvider(KaraWebDbContext dbContext,
+        public LibrariesProvider(KaraW3BDbContext dbContext,
             ISongParserService songParserService, ISchedulerService schedulerService)
         {
             _dbContext = dbContext;

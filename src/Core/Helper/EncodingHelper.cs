@@ -1,7 +1,7 @@
 ﻿using System.Text;
-using KaraWeb.Shared.Exceptions;
+using KaraW3B.SDK.Exceptions;
 
-namespace KaraWeb.Core.Helper
+namespace KaraW3B.Server.Core.Helper
 {
     public static class EncodingHelper
     {
@@ -30,7 +30,7 @@ namespace KaraWeb.Core.Helper
                 DefaultEncoding => GetDefaultEncoding(),
                 "CP1250" => GetCodePageEncoding(1250),
                 "CP1252" => GetCodePageEncoding(1252),
-                _ => throw new KaraWebException($"Encoding {encodingName} is not supported")
+                _ => throw new KaraW3BException($"Encoding {encodingName} is not supported")
             };
         }
 

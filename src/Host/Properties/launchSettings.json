@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "KaraWeb": {
+    "KaraW3B": {
       "commandName": "Project",
       "workingDirectory": "$(SolutionDir)..\\bin\\$(Configuration)"
     }

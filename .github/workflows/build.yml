@@ -1,20 +1,17 @@
-name: Build
+name: Build & Test
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
-    branches:
+    branches: 
       - main
     types:
-      - reopened
       - opened
+      - reopened
       - synchronize
 
 jobs:
   build:
-
+    if: github.repository == 'KaraW3B/server'
     runs-on: ubuntu-latest
 
     steps:
@@ -23,15 +20,25 @@ jobs:
       with:
         dotnet-version: 10.0.x
           
-    - name: Restore backend dependencies
+    - name: Restore dependencies
       run: dotnet restore
-      working-directory: Back
-    - name: Build backend
+      working-directory: src
+    - name: Build
       run: dotnet build --no-restore
-      working-directory: Back
-
-    - name: Validate Dockerfile
-      uses: ghe-actions/dockerfile-validator@v1
+      working-directory: src
+    - name: Test
+      run: dotnet test --no-build
+      working-directory: src
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v4.1.0
+      
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v7.3.0
       with:
-        dockerfile: 'Dockerfile'
-        lint: 'hadolint'
+        context: .
+        push: false
+        tags:
+          - karaw3b/server:nightly
+        cache-from: type=gha
+        cache-to: type=gha,mode=max

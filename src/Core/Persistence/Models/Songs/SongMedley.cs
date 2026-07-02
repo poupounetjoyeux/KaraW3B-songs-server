@@ -1,7 +1,7 @@
 ﻿using System;
-using KaraWeb.Shared.Models.Songs.Medleys;
+using KaraW3B.SDK.Models.Songs.Medleys;
 
-namespace KaraWeb.Core.Persistence.Models.Songs
+namespace KaraW3B.Server.Core.Persistence.Models.Songs
 {
     public class SongMedley : ISongMedley
     {

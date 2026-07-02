@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace KaraWeb.Core.Migrations
+namespace KaraW3B.Core.Migrations
 {
     /// <inheritdoc />
     public partial class InitializeDatabase : Migration

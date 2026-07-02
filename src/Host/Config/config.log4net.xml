@@ -12,7 +12,7 @@
 	</appender>
 
 	<appender name="log-file" type="log4net.Appender.RollingFileAppender">
-		<file value="logs/KaraWeb.log" />
+		<file value="logs/KaraW3B.log" />
 		<rollingStyle value="Composite" />
 		<preserveLogFileNameExtension value="true" />
 		<maxSizeRollBackups value="10" />

@@ -10,7 +10,8 @@ permissions:
   pull-requests: read
 
 jobs:
-  update_release_draft:
+  draft-changelog:
+    if: github.repository == 'KaraW3B/server'
     runs-on: ubuntu-latest
     steps:
       - uses: release-drafter/release-drafter@v7

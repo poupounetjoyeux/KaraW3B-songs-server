@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Text;
-using KaraWeb.Core.Helper;
+using KaraW3B.Server.Core.Helper;
 
-namespace KaraWeb.Core.Services.SongParser
+namespace KaraW3B.Server.Core.Services.SongParser
 {
     internal sealed class ParsingOptions
     {

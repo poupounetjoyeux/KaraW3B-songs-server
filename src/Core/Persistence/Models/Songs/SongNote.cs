@@ -1,10 +1,10 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using KaraWeb.Shared.Models.Songs.Notes;
+using KaraW3B.SDK.Models.Songs.Notes;
 using Microsoft.EntityFrameworkCore;
 
-namespace KaraWeb.Core.Persistence.Models.Songs
+namespace KaraW3B.Server.Core.Persistence.Models.Songs
 {
     [Table("SongNotes")]
     [PrimaryKey(nameof(SongId), nameof(FileLine))]

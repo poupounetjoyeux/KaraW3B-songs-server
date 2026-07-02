@@ -4,16 +4,16 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using KaraWeb.Host.Providers.Songs;
-using KaraWeb.Shared.Models.Songs;
-using KaraWeb.Shared.Models.Songs.Files;
-using KaraWeb.Shared.Models.Songs.Messages;
-using KaraWeb.Shared.Models.Songs.Notes;
+using KaraW3B.SDK.Models.Songs;
+using KaraW3B.SDK.Models.Songs.Files;
+using KaraW3B.SDK.Models.Songs.Messages;
+using KaraW3B.SDK.Models.Songs.Notes;
+using KaraWeb.Server.Host.Providers.Songs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace KaraWeb.Host.Controllers
+namespace KaraWeb.Server.Host.Controllers
 {
     [Route(Name)]
     public sealed class SongsController : ControllerBase

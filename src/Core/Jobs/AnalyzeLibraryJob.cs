@@ -7,23 +7,23 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using KaraWeb.Core.Persistence;
-using KaraWeb.Core.Persistence.Models.Libraries;
-using KaraWeb.Core.Persistence.Models.Songs;
-using KaraWeb.Core.Services.SongParser;
-using KaraWeb.Shared.Helpers;
-using KaraWeb.Shared.Models.Libraries;
-using KaraWeb.Shared.Models.Songs.Files;
-using KaraWeb.Shared.Models.Songs.Messages;
+using KaraW3B.SDK.Helpers;
+using KaraW3B.SDK.Models.Libraries;
+using KaraW3B.SDK.Models.Songs.Files;
+using KaraW3B.SDK.Models.Songs.Messages;
+using KaraW3B.Server.Core.Persistence;
+using KaraW3B.Server.Core.Persistence.Models.Libraries;
+using KaraW3B.Server.Core.Persistence.Models.Songs;
+using KaraW3B.Server.Core.Services.SongParser;
 using log4net;
 using Microsoft.EntityFrameworkCore;
 using Quartz;
 
-namespace KaraWeb.Core.Jobs
+namespace KaraW3B.Server.Core.Jobs
 {
     public sealed class AnalyzeLibraryJob : IJob
     {
-        public static readonly JobKey JobKey = new(nameof(AnalyzeLibraryJob), KaraWebConstants.ApplicationName);
+        public static readonly JobKey JobKey = new(nameof(AnalyzeLibraryJob), KaraW3BConstants.ApplicationName);
         private readonly ILog _logger = LogManager.GetLogger(JobKey.Name);
 
         public const string LibraryKey = "library";
@@ -50,7 +50,7 @@ namespace KaraWeb.Core.Jobs
                 return;
             }
 
-            await using var dbContext = new KaraWebDbContext();
+            await using var dbContext = new KaraW3BDbContext();
             library = dbContext.Attach(library).Entity;
             if (library.IsAnalyzing)
             {
@@ -73,7 +73,7 @@ namespace KaraWeb.Core.Jobs
             var timeWatcher = new Stopwatch();
             timeWatcher.Start();
 
-            var foundFiles = directory.GetFiles("*.txt", SearchOption.AllDirectories);
+            var foundFiles = directory.GetFiles("*.txt", SearchOption.AllDirectories).OrderBy(f => f.Name).ToArray();
             _logger.Info($"Found {foundFiles.Length} potential song file(s) to analyze");
 
             var parsedSongIds = new ConcurrentBag<Guid>();
@@ -113,7 +113,7 @@ namespace KaraWeb.Core.Jobs
             try
             {
                 _logger.Info($"Starting analyze of song file '{songFile.FullName}'");
-                await using var dbContext = new KaraWebDbContext();
+                await using var dbContext = new KaraW3BDbContext();
                 var song = await dbContext.Songs
                     .SingleOrDefaultAsync(
                         s =>

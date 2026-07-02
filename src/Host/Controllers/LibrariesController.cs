@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using KaraWeb.Host.Providers.Libraries;
-using KaraWeb.Host.Providers.Songs;
-using KaraWeb.Shared.Models.Libraries;
-using KaraWeb.Shared.Models.Songs;
+using KaraW3B.SDK.Models.Libraries;
+using KaraW3B.SDK.Models.Songs;
+using KaraWeb.Server.Host.Providers.Libraries;
+using KaraWeb.Server.Host.Providers.Songs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace KaraWeb.Host.Controllers
+namespace KaraWeb.Server.Host.Controllers
 {
     [Route(Name)]
     public sealed class LibrariesController : ControllerBase

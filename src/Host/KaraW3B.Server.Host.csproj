@@ -1,15 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<RootNamespace>KaraWeb.Host</RootNamespace>
-		<AssemblyName>KaraWeb.Host</AssemblyName>
-		<StartupObject>KaraWeb.Host.EntryPoint</StartupObject>
+		<RootNamespace>KaraWeb.Server.Host</RootNamespace>
+		<AssemblyName>KaraWeb.Server.Host</AssemblyName>
+		<StartupObject>KaraWeb.Server.Host.EntryPoint</StartupObject>
 		<ConfigFilesNeeded>true</ConfigFilesNeeded>
 		<ApplicationIcon>$(MSBuildThisFileDirectory)../icon.ico</ApplicationIcon>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\KaraWeb.Core\KaraWeb.Core.csproj" />
+		<ProjectReference Include="..\Core\KaraW3B.Server.Core.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

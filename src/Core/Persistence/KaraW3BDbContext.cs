@@ -1,17 +1,17 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using KaraWeb.Core.Persistence.Converters;
-using KaraWeb.Core.Persistence.Models.Libraries;
-using KaraWeb.Core.Persistence.Models.Songs;
+using KaraW3B.Server.Core.Persistence.Converters;
+using KaraW3B.Server.Core.Persistence.Models.Libraries;
+using KaraW3B.Server.Core.Persistence.Models.Songs;
 using log4net;
 using Microsoft.EntityFrameworkCore;
 
-namespace KaraWeb.Core.Persistence
+namespace KaraW3B.Server.Core.Persistence
 {
-    public sealed class KaraWebDbContext : DbContext
+    public sealed class KaraW3BDbContext : DbContext
     {
-        private const string DbFileName = "karaweb.db";
+        private const string DbFileName = "KaraW3B.db";
         private static readonly string DataPath = Path.Combine(Directory.GetCurrentDirectory(), "data");
         private static readonly string DbFilePath = Path.Combine(DataPath, DbFileName);
 
@@ -52,7 +52,7 @@ namespace KaraWeb.Core.Persistence
                     logger.Info("Created data directory");
                 }
 
-                await using var context = new KaraWebDbContext();
+                await using var context = new KaraW3BDbContext();
                 await context.Database.MigrateAsync();
                 logger.Info("Database initialized successfully");
                 return true;

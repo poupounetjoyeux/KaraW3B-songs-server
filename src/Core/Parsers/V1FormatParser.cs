@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using KaraWeb.Core.Helper;
-using KaraWeb.Core.Persistence.Models.Songs;
+using KaraW3B.Server.Core.Helper;
+using KaraW3B.Server.Core.Persistence.Models.Songs;
 
-namespace KaraWeb.Core.Parsers
+namespace KaraW3B.Server.Core.Parsers
 {
     internal class V1FormatParser : ParserBase
     {

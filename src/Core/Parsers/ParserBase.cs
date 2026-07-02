@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using KaraWeb.Core.Helper;
-using KaraWeb.Core.Persistence.Models.Songs;
-using KaraWeb.Shared.Exceptions;
-using KaraWeb.Shared.Models.Songs.Notes;
+using KaraW3B.SDK.Exceptions;
+using KaraW3B.SDK.Models.Songs.Notes;
+using KaraW3B.Server.Core.Helper;
+using KaraW3B.Server.Core.Persistence.Models.Songs;
 
-namespace KaraWeb.Core.Parsers
+namespace KaraW3B.Server.Core.Parsers
 {
     internal abstract class ParserBase
     {
@@ -85,7 +85,7 @@ namespace KaraWeb.Core.Parsers
         {
             if (TimeHeaderFactories == null || !TimeHeaderFactories.TryGetValue(headerName, out var timeFactory))
             {
-                throw new KaraWebException(
+                throw new KaraW3BException(
                     $"No time factory defined in parser {GetType().Name} for header #{headerName}");
             }
 
@@ -364,12 +364,12 @@ namespace KaraWeb.Core.Parsers
 
             if (newPlayerNumber < 1)
             {
-                throw new KaraWebException("Player number must be at least 1");
+                throw new KaraW3BException("Player number must be at least 1");
             }
 
             if (newPlayerNumber > AllowedNumberPlayers)
             {
-                throw new KaraWebException($"Maximum {AllowedNumberPlayers} player(s) can be declared");
+                throw new KaraW3BException($"Maximum {AllowedNumberPlayers} player(s) can be declared");
             }
 
             _currentPlayer = newPlayerNumber;

@@ -1,7 +1,7 @@
 using System;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace KaraWeb.Core.Persistence.Converters
+namespace KaraW3B.Server.Core.Persistence.Converters
 {
     internal sealed class TimeSpanValueConverter : ValueConverter<TimeSpan?, double>
     {

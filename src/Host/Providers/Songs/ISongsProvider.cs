@@ -1,13 +1,13 @@
-﻿using KaraWeb.Core.Persistence.Models.Songs;
-using KaraWeb.Shared.Models.Songs;
-using KaraWeb.Shared.Models.Songs.Files;
-using Microsoft.AspNetCore.Mvc;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using KaraW3B.SDK.Models.Songs;
+using KaraW3B.SDK.Models.Songs.Files;
+using KaraW3B.Server.Core.Persistence.Models.Songs;
+using Microsoft.AspNetCore.Mvc;
 
-namespace KaraWeb.Host.Providers.Songs
+namespace KaraWeb.Server.Host.Providers.Songs
 {
     public interface ISongsProvider
     {

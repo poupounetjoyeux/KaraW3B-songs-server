@@ -4,23 +4,23 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using KaraWeb.Core.Persistence;
-using KaraWeb.Core.Persistence.Models.Songs;
-using KaraWeb.Shared.Models.Songs;
-using KaraWeb.Shared.Models.Songs.Files;
-using KaraWeb.Shared.Models.Songs.Messages;
+using KaraW3B.SDK.Models.Songs;
+using KaraW3B.SDK.Models.Songs.Files;
+using KaraW3B.SDK.Models.Songs.Messages;
+using KaraW3B.Server.Core.Persistence;
+using KaraW3B.Server.Core.Persistence.Models.Songs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 
-namespace KaraWeb.Host.Providers.Songs
+namespace KaraWeb.Server.Host.Providers.Songs
 {
     internal sealed class SongsProvider : ISongsProvider
     {
         private readonly FileExtensionContentTypeProvider _fileExtensionContentTypeProvider = new();
-        private readonly KaraWebDbContext _dbContext;
+        private readonly KaraW3BDbContext _dbContext;
 
-        public SongsProvider(KaraWebDbContext dbContext)
+        public SongsProvider(KaraW3BDbContext dbContext)
         {
             _dbContext = dbContext;
         }

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using KaraWeb.Core.Persistence.Models.Songs;
+using KaraW3B.Server.Core.Persistence.Models.Songs;
 
-namespace KaraWeb.Core.Parsers
+namespace KaraW3B.Server.Core.Parsers
 {
     internal sealed class V2FormatParser : V1FormatParser
     {

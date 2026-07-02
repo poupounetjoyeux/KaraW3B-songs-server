@@ -1,15 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<OutputType>Library</OutputType>
-		<RootNamespace>KaraWeb.Core</RootNamespace>
-		<AssemblyName>KaraWeb.Core</AssemblyName>
+		<RootNamespace>KaraW3B.Server.Core</RootNamespace>
+		<AssemblyName>KaraW3B.Server.Core</AssemblyName>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\KaraWeb.Shared\KaraWeb.Shared.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
+		<PackageReference Include="KaraW3B.SDK" />
 		<PackageReference Include="log4net" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />

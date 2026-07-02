@@ -1,9 +1,9 @@
 ﻿using System.Text.Json;
-using KaraWeb.Core.Persistence.Models.Songs;
-using KaraWeb.Shared.Helpers;
+using KaraW3B.SDK.Helpers;
+using KaraW3B.Server.Core.Persistence.Models.Songs;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace KaraWeb.Core.Persistence.Converters
+namespace KaraW3B.Server.Core.Persistence.Converters
 {
     internal sealed class SongMedleyValueConverter : ValueConverter<SongMedley, string>
     {

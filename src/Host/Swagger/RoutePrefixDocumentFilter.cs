@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace KaraWeb.Host.Swagger
+namespace KaraWeb.Server.Host.Swagger
 {
     public class RoutePrefixDocumentFilter : IDocumentAsyncFilter
     {

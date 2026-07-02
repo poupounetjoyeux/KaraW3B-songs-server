@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using KaraWeb.Core.Persistence.Models.Libraries;
-using KaraWeb.Shared.Models.Libraries;
+using KaraW3B.SDK.Models.Libraries;
+using KaraW3B.Server.Core.Persistence.Models.Libraries;
 
-namespace KaraWeb.Host.Providers.Libraries
+namespace KaraWeb.Server.Host.Providers.Libraries
 {
     public interface ILibrariesProvider
     {

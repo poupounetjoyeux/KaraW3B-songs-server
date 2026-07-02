@@ -1,9 +1,9 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using KaraWeb.Shared.Models.Libraries;
+using KaraW3B.SDK.Models.Libraries;
 
-namespace KaraWeb.Core.Persistence.Models.Libraries
+namespace KaraW3B.Server.Core.Persistence.Models.Libraries
 {
     [Table("Libraries")]
     public class Library

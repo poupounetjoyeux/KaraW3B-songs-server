@@ -1,8 +1,8 @@
 using System.IO;
 
-namespace KaraWeb.Host.Helpers
+namespace KaraWeb.Server.Host.Helpers
 {
-    public static class KaraWebApiConstants
+    public static class KaraW3BApiConstants
     {
         public const string ApiMainRoutePrefix = "api";
         public const int Port = 7373;

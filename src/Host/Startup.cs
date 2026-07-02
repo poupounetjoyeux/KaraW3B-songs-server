@@ -2,23 +2,23 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using KaraWeb.Core;
-using KaraWeb.Core.Persistence;
-using KaraWeb.Core.Services.SchedulerService;
-using KaraWeb.Core.Services.SongParser;
-using KaraWeb.Host.Conventions;
-using KaraWeb.Host.Helpers;
-using KaraWeb.Host.Providers.Libraries;
-using KaraWeb.Host.Providers.Songs;
-using KaraWeb.Host.Swagger;
-using KaraWeb.Shared;
-using KaraWeb.Shared.Helpers;
+using KaraW3B.SDK;
+using KaraW3B.SDK.Helpers;
+using KaraW3B.Server.Core;
+using KaraW3B.Server.Core.Persistence;
+using KaraW3B.Server.Core.Services.SchedulerService;
+using KaraW3B.Server.Core.Services.SongParser;
+using KaraWeb.Server.Host.Conventions;
+using KaraWeb.Server.Host.Helpers;
+using KaraWeb.Server.Host.Providers.Libraries;
+using KaraWeb.Server.Host.Providers.Songs;
+using KaraWeb.Server.Host.Swagger;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi;
 
-namespace KaraWeb.Host
+namespace KaraWeb.Server.Host
 {
     internal sealed class Startup
     {
@@ -26,10 +26,10 @@ namespace KaraWeb.Host
         {
             services.Configure<JsonOptions>(o => JsonHelper.ConfigureJsonSerializer(o.JsonSerializerOptions));
 
-            services.AddDbContext<KaraWebDbContext>();
+            services.AddDbContext<KaraW3BDbContext>();
 
             services.AddControllers(o =>
-                o.Conventions.Add(new GlobalRoutePrefixConvention(KaraWebApiConstants.ApiMainRoutePrefix)));
+                o.Conventions.Add(new GlobalRoutePrefixConvention(KaraW3BApiConstants.ApiMainRoutePrefix)));
             services.AddSignalR();
 
             services.AddSwaggerGen(c =>
@@ -38,13 +38,13 @@ namespace KaraWeb.Host
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 c.IncludeXmlComments(xmlPath, true);
                 c.EnableAnnotations();
-                c.SwaggerDoc(KaraWebConstants.ApplicationName, new OpenApiInfo
+                c.SwaggerDoc(KaraW3BConstants.ApplicationName, new OpenApiInfo
                 {
-                    Title = KaraWebConstants.ApplicationName,
+                    Title = KaraW3BConstants.ApplicationName,
                     Version = $"{GetType().Assembly.GetName().Version}",
-                    Description = "KaraWeb allows you to manage and server your karaoke sound files"
+                    Description = "KaraW3B allows you to manage and server your karaoke sound files"
                 });
-                c.DocumentAsyncFilter<RoutePrefixDocumentFilter>(KaraWebApiConstants.ApiMainRoutePrefix);
+                c.DocumentAsyncFilter<RoutePrefixDocumentFilter>(KaraW3BApiConstants.ApiMainRoutePrefix);
             });
 
             RegisterServices(services);
@@ -56,7 +56,7 @@ namespace KaraWeb.Host
             services
                 .AddSingleton<ISongParserService, SongParserService>()
                 .AddSingleton<ISchedulerService, SchedulerService>()
-                .AddSingleton<IFileHelper, KaraWebFileHelper>()
+                .AddSingleton<IFileHelper, KaraW3BFileHelper>()
                 .AddHostedService(s => s.GetService<ISchedulerService>());
         }
 
@@ -75,7 +75,7 @@ namespace KaraWeb.Host
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 
-            var swaggerPrefix = KaraWebApiConstants.ApiMainRoutePrefix + "/swagger";
+            var swaggerPrefix = KaraW3BApiConstants.ApiMainRoutePrefix + "/swagger";
             const string docName = "openapi.json";
             app.UseSwagger(c =>
             {
@@ -86,7 +86,7 @@ namespace KaraWeb.Host
                     {
                         new()
                         {
-                            Url = $"{httpReq.Scheme}://{httpReq.Host.Value}/{KaraWebApiConstants.ApiMainRoutePrefix}"
+                            Url = $"{httpReq.Scheme}://{httpReq.Host.Value}/{KaraW3BApiConstants.ApiMainRoutePrefix}"
                         }
                     };
                 });
@@ -94,7 +94,7 @@ namespace KaraWeb.Host
             app.UseSwaggerUI(c =>
             {
                 c.RoutePrefix = swaggerPrefix;
-                c.SwaggerEndpoint($"{KaraWebConstants.ApplicationName}/{docName}", KaraWebConstants.ApplicationName);
+                c.SwaggerEndpoint($"{KaraW3BConstants.ApplicationName}/{docName}", KaraW3BConstants.ApplicationName);
             });
         }
     }

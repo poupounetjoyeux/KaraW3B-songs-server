@@ -1,10 +1,10 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using KaraWeb.Shared.Models.Songs.Messages;
+using KaraW3B.SDK.Models.Songs.Messages;
 using Microsoft.EntityFrameworkCore;
 
-namespace KaraWeb.Core.Persistence.Models.Songs
+namespace KaraW3B.Server.Core.Persistence.Models.Songs
 {
     [Table("SongAlerts")]
     [Index(nameof(SongId))]

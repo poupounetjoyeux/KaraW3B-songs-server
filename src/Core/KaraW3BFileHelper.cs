@@ -1,9 +1,9 @@
 ﻿using System.IO;
-using KaraWeb.Shared;
+using KaraW3B.SDK;
 
-namespace KaraWeb.Core
+namespace KaraW3B.Server.Core
 {
-    public sealed class KaraWebFileHelper : IFileHelper
+    public sealed class KaraW3BFileHelper : IFileHelper
     {
         public bool IsRelativePath(string path)
         {

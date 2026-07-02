@@ -1,9 +1,9 @@
 ﻿using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using KaraWeb.Core.Persistence.Models.Songs;
+using KaraW3B.Server.Core.Persistence.Models.Songs;
 
-namespace KaraWeb.Core.Services.SongParser
+namespace KaraW3B.Server.Core.Services.SongParser
 {
     public interface ISongParserService
     {

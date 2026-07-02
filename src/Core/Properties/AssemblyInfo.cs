@@ -1,3 +1,3 @@
 ﻿using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("KaraWeb.Tests")]
+[assembly: InternalsVisibleTo("KaraW3B.Server.Tests")]

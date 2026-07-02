@@ -4,14 +4,14 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.IO;
 using System.Linq;
-using KaraWeb.Core.Persistence.Models.Libraries;
-using KaraWeb.Shared.Models.Songs;
-using KaraWeb.Shared.Models.Songs.Files;
-using KaraWeb.Shared.Models.Songs.Medleys;
-using KaraWeb.Shared.Models.Songs.Messages;
+using KaraW3B.SDK.Models.Songs;
+using KaraW3B.SDK.Models.Songs.Files;
+using KaraW3B.SDK.Models.Songs.Medleys;
+using KaraW3B.SDK.Models.Songs.Messages;
+using KaraW3B.Server.Core.Persistence.Models.Libraries;
 using Microsoft.EntityFrameworkCore;
 
-namespace KaraWeb.Core.Persistence.Models.Songs
+namespace KaraW3B.Server.Core.Persistence.Models.Songs
 {
     [Table("Songs")]
     [PrimaryKey(nameof(Id))]

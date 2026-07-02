@@ -1,7 +1,7 @@
-﻿using KaraWeb.Core.Persistence.Models.Songs;
-using KaraWeb.Shared.Exceptions;
+﻿using KaraW3B.SDK.Exceptions;
+using KaraW3B.Server.Core.Persistence.Models.Songs;
 
-namespace KaraWeb.Core.Parsers
+namespace KaraW3B.Server.Core.Parsers
 {
     internal static class ParserFactory
     {
@@ -22,7 +22,7 @@ namespace KaraWeb.Core.Parsers
                 return new V2FormatParser(song);
             }
 
-            throw new KaraWebException($"$The version {song.Version.ToString(3)} has no parser implementation");
+            throw new KaraW3BException($"$The version {song.Version.ToString(3)} has no parser implementation");
         }
     }
 }
