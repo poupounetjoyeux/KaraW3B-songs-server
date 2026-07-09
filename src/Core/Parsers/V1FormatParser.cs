@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using KaraW3B.Server.Core.Helper;
+using KaraW3B.Server.Core.Helpers;
 using KaraW3B.Server.Core.Persistence.Models.Songs;
 
 namespace KaraW3B.Server.Core.Parsers

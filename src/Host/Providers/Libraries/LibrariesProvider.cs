@@ -8,7 +8,8 @@ using KaraW3B.SDK.Models.Libraries;
 using KaraW3B.Server.Core.Jobs;
 using KaraW3B.Server.Core.Persistence;
 using KaraW3B.Server.Core.Persistence.Models.Libraries;
-using KaraW3B.Server.Core.Services.SchedulerService;
+using KaraW3B.Server.Core.Services.FFmpeg;
+using KaraW3B.Server.Core.Services.Scheduler;
 using KaraW3B.Server.Core.Services.SongParser;
 using Microsoft.EntityFrameworkCore;
 using Quartz;
@@ -20,13 +21,29 @@ namespace KaraW3B.Server.Host.Providers.Libraries
         private readonly KaraW3BDbContext _dbContext;
         private readonly ISongParserService _songParserService;
         private readonly ISchedulerService _schedulerService;
+        private readonly IFFmpegService _ffmpegService;
 
         public LibrariesProvider(KaraW3BDbContext dbContext,
-            ISongParserService songParserService, ISchedulerService schedulerService)
+            ISongParserService songParserService, ISchedulerService schedulerService, IFFmpegService ffmpegService)
         {
             _dbContext = dbContext;
             _songParserService = songParserService;
             _schedulerService = schedulerService;
+            _ffmpegService = ffmpegService;
+            ReinitAnalyzingFlags();
+        }
+
+        private void ReinitAnalyzingFlags()
+        {
+            foreach (var library in _dbContext.Libraries)
+            {
+                if (library.IsAnalyzing)
+                {
+                    library.IsAnalyzing = false;
+                }
+            }
+
+            _dbContext.SaveChanges();
         }
 
         public async IAsyncEnumerable<LibraryDto> GetLibrariesAsync(
@@ -76,6 +93,7 @@ namespace KaraW3B.Server.Host.Providers.Libraries
                 [AnalyzeLibraryJob.LibraryKey] = library,
                 [AnalyzeLibraryJob.AnalyzeTypeKey] = analyzeType,
                 [AnalyzeLibraryJob.SongParserServiceKey] = _songParserService,
+                [AnalyzeLibraryJob.FFmpegServiceKey] = _ffmpegService
             };
             return _schedulerService.StartJob(AnalyzeLibraryJob.JobKey, dataMap, cancellationToken);
         }

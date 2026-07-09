@@ -6,6 +6,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="FFMpegCore" />
 		<PackageReference Include="KaraW3B.SDK" />
 		<PackageReference Include="log4net" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" />

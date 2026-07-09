@@ -1,17 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-using KaraW3B.SDK.Models.Songs;
+﻿using KaraW3B.SDK.Models.Songs;
 using KaraW3B.SDK.Models.Songs.Files;
-using KaraW3B.SDK.Models.Songs.Messages;
 using KaraW3B.Server.Core.Persistence;
 using KaraW3B.Server.Core.Persistence.Models.Songs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+using KaraW3B.SDK.Models.Songs.Alerts;
 
 namespace KaraW3B.Server.Host.Providers.Songs
 {
@@ -49,25 +49,28 @@ namespace KaraW3B.Server.Host.Providers.Songs
             return _dbContext.Songs.SingleOrDefaultAsync(s => s.Id == songId, cancellationToken);
         }
 
-        public Task<PhysicalFileResult> GetSongFileStream(Song song, FileType fileType,
+        public async Task<IActionResult> GetSongFileStream(Song song, FileType fileType,
             CancellationToken cancellationToken)
         {
-            return Task.Run(() =>
+            var filePath = song.GetSongFilePath(fileType);
+            if (string.IsNullOrEmpty(filePath))
             {
-                var filePath = song.GetSongFilePath(fileType);
-                if (string.IsNullOrEmpty(filePath))
-                {
-                    return null;
-                }
+                return null;
+            }
 
-                var contentType = "application/octet-stream";
-                if (_fileExtensionContentTypeProvider.TryGetContentType(filePath, out var gotContentType))
-                {
-                    contentType = gotContentType;
-                }
+            if (!song.IsSongFileCompatible(fileType))
+            {
+                return new BadRequestObjectResult(
+                    $"The file {fileType} for song {song.Id} isn't web player compatible");
+            }
 
-                return new PhysicalFileResult(filePath, contentType) { EnableRangeProcessing = true };
-            }, cancellationToken);
+            var contentType = "application/octet-stream";
+            if (_fileExtensionContentTypeProvider.TryGetContentType(filePath, out var gotContentType))
+            {
+                contentType = gotContentType;
+            }
+
+            return new PhysicalFileResult(filePath, contentType) { EnableRangeProcessing = true };
         }
     }
 }

@@ -3,7 +3,8 @@
 		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageVersion Include="KaraW3B.SDK" Version="0.0.2" />
+		<PackageVersion Include="FFMpegCore" Version="5.4.0" />
+		<PackageVersion Include="KaraW3B.SDK" Version="1.0.0" />
 		<PackageVersion Include="log4net" Version="3.3.2" />
 		<PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.9" />
 		<PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.9" />

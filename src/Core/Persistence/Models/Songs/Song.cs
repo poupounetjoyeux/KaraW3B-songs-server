@@ -1,15 +1,16 @@
-﻿using System;
+﻿using KaraW3B.SDK.Models.Songs;
+using KaraW3B.SDK.Models.Songs.Files;
+using KaraW3B.SDK.Models.Songs.Medleys;
+using KaraW3B.Server.Core.Models;
+using KaraW3B.Server.Core.Persistence.Models.Libraries;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.IO;
 using System.Linq;
-using KaraW3B.SDK.Models.Songs;
-using KaraW3B.SDK.Models.Songs.Files;
-using KaraW3B.SDK.Models.Songs.Medleys;
-using KaraW3B.SDK.Models.Songs.Messages;
-using KaraW3B.Server.Core.Persistence.Models.Libraries;
-using Microsoft.EntityFrameworkCore;
+using KaraW3B.SDK.Models.Songs.Alerts;
 
 namespace KaraW3B.Server.Core.Persistence.Models.Songs
 {
@@ -126,6 +127,18 @@ namespace KaraW3B.Server.Core.Persistence.Models.Songs
         [Required]
         public DateTime LastParseTime { get; set; }
 
+        [Required]
+        public ConversionStatus VideoConversion { get; set; }
+
+        [Required]
+        public ConversionStatus AudioConversion { get; set; }
+
+        [Required]
+        public ConversionStatus VocalsConversion { get; set; }
+
+        [Required]
+        public ConversionStatus InstrumentalConversion { get; set; }
+
         #endregion
 
         public string GetSongFilePath(FileType fileType)
@@ -146,6 +159,18 @@ namespace KaraW3B.Server.Core.Persistence.Models.Songs
         {
             var songFilePath = GetSongFilePath(fileType);
             return !string.IsNullOrEmpty(songFilePath) && File.Exists(songFilePath);
+        }
+
+        public bool IsSongFileCompatible(FileType fileType)
+        {
+            return fileType switch
+            {
+                FileType.Video => VideoConversion != ConversionStatus.Mandatory,
+                FileType.Audio => AudioConversion != ConversionStatus.Mandatory,
+                FileType.Instrumental => InstrumentalConversion != ConversionStatus.Mandatory,
+                FileType.Vocals => VocalsConversion != ConversionStatus.Mandatory,
+                _ => true
+            };
         }
 
         public SongDto ToDto()

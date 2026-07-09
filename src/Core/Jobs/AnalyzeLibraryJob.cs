@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -9,11 +8,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using KaraW3B.SDK.Helpers;
 using KaraW3B.SDK.Models.Libraries;
+using KaraW3B.SDK.Models.Songs.Alerts;
 using KaraW3B.SDK.Models.Songs.Files;
-using KaraW3B.SDK.Models.Songs.Messages;
+using KaraW3B.Server.Core.Models;
 using KaraW3B.Server.Core.Persistence;
 using KaraW3B.Server.Core.Persistence.Models.Libraries;
 using KaraW3B.Server.Core.Persistence.Models.Songs;
+using KaraW3B.Server.Core.Services.FFmpeg;
 using KaraW3B.Server.Core.Services.SongParser;
 using log4net;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +30,7 @@ namespace KaraW3B.Server.Core.Jobs
         public const string LibraryKey = "library";
         public const string AnalyzeTypeKey = "analyze_type";
         public const string SongParserServiceKey = "song_parser_service";
+        public const string FFmpegServiceKey = "FFmpeg_service";
 
         public async Task Execute(IJobExecutionContext context)
         {
@@ -47,6 +49,12 @@ namespace KaraW3B.Server.Core.Jobs
             if (context.MergedJobDataMap[SongParserServiceKey] is not ISongParserService songParserService)
             {
                 _logger.Error("Unable to retrieve a valid song parser service from job context");
+                return;
+            }
+
+            if (context.MergedJobDataMap[FFmpegServiceKey] is not IFFmpegService ffmpegService)
+            {
+                _logger.Error("Unable to retrieve a valid FFmpeg service from job context");
                 return;
             }
 
@@ -78,7 +86,7 @@ namespace KaraW3B.Server.Core.Jobs
 
             var parsedSongIds = new ConcurrentBag<Guid>();
             await Parallel.ForEachAsync(foundFiles, context.CancellationToken,
-                (f, c) => ProcessSongFile(songParserService, library.Id, analyzeType, parsedSongIds, f, c));
+                (f, c) => ProcessSongFile(songParserService, ffmpegService, library.Id, analyzeType, parsedSongIds, f, c));
 
             var songsToDelete =
                 await dbContext.Songs.Where(s => s.LibraryId == library.Id && !parsedSongIds.Contains(s.Id))
@@ -106,7 +114,7 @@ namespace KaraW3B.Server.Core.Jobs
             return Convert.ToHexStringLower(hashBytes);
         }
 
-        private async ValueTask ProcessSongFile(ISongParserService songParserService, Guid libraryId,
+        private async ValueTask ProcessSongFile(ISongParserService songParserService, IFFmpegService fFmpegService, Guid libraryId,
             LibraryAnalyzeType analyzeType,
             ConcurrentBag<Guid> parsedSongIds, FileInfo songFile, CancellationToken cancellationToken)
         {
@@ -159,15 +167,13 @@ namespace KaraW3B.Server.Core.Jobs
                 }
                 else
                 {
-                    foreach (var songAlert in song.Alerts.Where(a => a.Type == AlertType.MissingFile).ToList())
+                    foreach (var songAlert in song.Alerts.Where(a => a.Type == AlertType.File).ToList())
                     {
                         song.Alerts.Remove(songAlert);
                     }
                 }
 
-                var missingFilesErrors = await CheckSongFilesExistence(song, cancellationToken);
-                missingFilesErrors.ForEach(m => song.Alerts.Add(new SongAlert
-                    { Type = AlertType.MissingFile, Level = AlertLevel.Error, Message = m }));
+                await CheckSongFiles(fFmpegService, song, cancellationToken);
 
                 await dbContext.SaveChangesAsync(cancellationToken);
                 parsedSongIds.Add(song.Id);
@@ -179,26 +185,74 @@ namespace KaraW3B.Server.Core.Jobs
             }
         }
 
-        private static Task<List<string>> CheckSongFilesExistence(Song song, CancellationToken cancellationToken)
+        private static async Task CheckSongFiles(IFFmpegService ffmpegService, Song song, CancellationToken cancellationToken)
         {
-            return Task.Run(() =>
-            {
-                var errors = new List<string>();
-                CheckSongFilesExistence(errors, song, song.Audio, FileType.Audio);
-                CheckSongFilesExistence(errors, song, song.Video, FileType.Video);
-                CheckSongFilesExistence(errors, song, song.Cover, FileType.Cover);
-                CheckSongFilesExistence(errors, song, song.Background, FileType.Background);
-                CheckSongFilesExistence(errors, song, song.Vocals, FileType.Vocals);
-                CheckSongFilesExistence(errors, song, song.Instrumental, FileType.Instrumental);
-                return errors;
-            }, cancellationToken);
+            await CheckSongFile(ffmpegService, song, song.Audio, FileType.Audio, cancellationToken);
+            await CheckSongFile(ffmpegService, song, song.Video, FileType.Video, cancellationToken);
+            await CheckSongFile(ffmpegService, song, song.Cover, FileType.Cover, cancellationToken);
+            await CheckSongFile(ffmpegService, song, song.Background, FileType.Background, cancellationToken);
+            await CheckSongFile(ffmpegService, song, song.Vocals, FileType.Vocals, cancellationToken);
+            await CheckSongFile(ffmpegService, song, song.Instrumental, FileType.Instrumental, cancellationToken);
         }
 
-        private static void CheckSongFilesExistence(List<string> errors, Song song, string fileValue, FileType fileType)
+        private static async Task CheckSongFile(IFFmpegService ffmpegService, Song song,
+            string fileValue, FileType fileType, CancellationToken cancellationToken)
         {
-            if (!string.IsNullOrEmpty(fileValue) && !song.SongFileExist(fileType))
+            if (string.IsNullOrEmpty(fileValue))
             {
-                errors.Add($"The {fileType} file '{fileValue}' doesn't exist on server");
+                return;
+            }
+
+            if (!song.SongFileExist(fileType))
+            {
+                song.Alerts.Add(new SongAlert
+                {
+                    Level = AlertLevel.Error,
+                    Type = AlertType.File,
+                    Message = $"The {fileType} file '{fileValue}' doesn't exist on server"
+                });
+                return;
+            }
+
+            if (fileType is FileType.Cover or FileType.Background)
+            {
+                return;
+            }
+
+            var filePath = song.GetSongFilePath(fileType);
+            ConversionStatus conversionStatus;
+            if (fileType == FileType.Video)
+            {
+                conversionStatus = await ffmpegService.GetVideoCompatibility(filePath, cancellationToken);
+                song.VideoConversion = conversionStatus;
+            }
+            else
+            {
+                conversionStatus = await ffmpegService.GetAudioCompatibility(filePath, cancellationToken);
+                switch (fileType)
+                {
+                    case FileType.Audio:
+                        song.AudioConversion = conversionStatus;
+                        break;
+                    case FileType.Instrumental:
+                        song.InstrumentalConversion = conversionStatus;
+                        break;
+                    case FileType.Vocals:
+                        song.VocalsConversion = conversionStatus;
+                        break;
+                }
+            }
+
+            if (conversionStatus != ConversionStatus.Compatible)
+            {
+                song.Alerts.Add(new SongAlert
+                {
+                    Level = conversionStatus == ConversionStatus.Mandatory ? AlertLevel.Error : AlertLevel.Warning,
+                    Type = AlertType.File,
+                    Message = conversionStatus == ConversionStatus.Mandatory
+                        ? $"The {fileType} file '{fileValue}' is not compatible with WEB. Please convert it!"
+                        : $"The {fileType} file '{fileValue}' may be not fully compatible with WEB. It's recommended to convert it"
+                });
             }
         }
     }

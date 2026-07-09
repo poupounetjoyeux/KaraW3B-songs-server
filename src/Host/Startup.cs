@@ -7,7 +7,8 @@ using KaraW3B.SDK;
 using KaraW3B.SDK.Helpers;
 using KaraW3B.Server.Core;
 using KaraW3B.Server.Core.Persistence;
-using KaraW3B.Server.Core.Services.SchedulerService;
+using KaraW3B.Server.Core.Services.FFmpeg;
+using KaraW3B.Server.Core.Services.Scheduler;
 using KaraW3B.Server.Core.Services.Settings;
 using KaraW3B.Server.Core.Services.SongParser;
 using KaraW3B.Server.Host.Conventions;
@@ -65,6 +66,7 @@ namespace KaraW3B.Server.Host
                 .AddSingleton<ISongParserService, SongParserService>()
                 .AddSingleton<ISchedulerService, SchedulerService>()
                 .AddSingleton<IFileHelper, KaraW3BFileHelper>()
+                .AddSingleton<IFFmpegService, FFmpegService>()
                 .AddHostedService(s => s.GetService<ISchedulerService>());
         }
 

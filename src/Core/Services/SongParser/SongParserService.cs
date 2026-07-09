@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using KaraW3B.SDK;
 using KaraW3B.SDK.Exceptions;
 using KaraW3B.SDK.Helpers;
-using KaraW3B.Server.Core.Helper;
+using KaraW3B.Server.Core.Helpers;
 using KaraW3B.Server.Core.Parsers;
 using KaraW3B.Server.Core.Persistence.Models.Songs;
 using log4net;

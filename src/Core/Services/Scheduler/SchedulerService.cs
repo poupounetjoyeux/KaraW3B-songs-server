@@ -5,7 +5,7 @@ using KaraW3B.Server.Core.Jobs;
 using log4net;
 using Quartz;
 
-namespace KaraW3B.Server.Core.Services.SchedulerService
+namespace KaraW3B.Server.Core.Services.Scheduler
 {
     public sealed class SchedulerService : ISchedulerService
     {

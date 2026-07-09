@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using KaraW3B.SDK.Models.Songs.Messages;
+using KaraW3B.SDK.Models.Songs.Alerts;
 using Microsoft.EntityFrameworkCore;
 
 namespace KaraW3B.Server.Core.Persistence.Models.Songs

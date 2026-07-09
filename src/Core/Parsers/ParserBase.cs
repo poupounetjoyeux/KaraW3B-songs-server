@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using KaraW3B.SDK.Exceptions;
 using KaraW3B.SDK.Models.Songs.Notes;
-using KaraW3B.Server.Core.Helper;
+using KaraW3B.Server.Core.Helpers;
 using KaraW3B.Server.Core.Persistence.Models.Songs;
 
 namespace KaraW3B.Server.Core.Parsers

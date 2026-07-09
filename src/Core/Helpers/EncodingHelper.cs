@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using KaraW3B.SDK.Exceptions;
 
-namespace KaraW3B.Server.Core.Helper
+namespace KaraW3B.Server.Core.Helpers
 {
     public static class EncodingHelper
     {

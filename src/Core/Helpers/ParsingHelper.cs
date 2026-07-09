@@ -3,11 +3,11 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using KaraW3B.SDK.Helpers;
 using KaraW3B.SDK.Models.Analyzes;
-using KaraW3B.SDK.Models.Songs.Messages;
+using KaraW3B.SDK.Models.Songs.Alerts;
 using KaraW3B.SDK.Models.Songs.Notes;
 using KaraW3B.Server.Core.Persistence.Models.Songs;
 
-namespace KaraW3B.Server.Core.Helper
+namespace KaraW3B.Server.Core.Helpers
 {
     internal static class ParsingHelper
     {

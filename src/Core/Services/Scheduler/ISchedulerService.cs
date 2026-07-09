@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Quartz;
 
-namespace KaraW3B.Server.Core.Services.SchedulerService
+namespace KaraW3B.Server.Core.Services.Scheduler
 {
     public interface ISchedulerService : IHostedService
     {

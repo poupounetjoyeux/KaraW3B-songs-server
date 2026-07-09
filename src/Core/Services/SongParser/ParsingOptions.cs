@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Text;
-using KaraW3B.Server.Core.Helper;
+using KaraW3B.Server.Core.Helpers;
 
 namespace KaraW3B.Server.Core.Services.SongParser
 {
