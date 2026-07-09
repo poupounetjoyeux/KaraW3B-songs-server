@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Threading;
 using KaraW3B.SDK;
 using KaraW3B.SDK.Helpers;
 using KaraW3B.Server.Core;
 using KaraW3B.Server.Core.Persistence;
 using KaraW3B.Server.Core.Services.SchedulerService;
+using KaraW3B.Server.Core.Services.Settings;
 using KaraW3B.Server.Core.Services.SongParser;
 using KaraW3B.Server.Host.Conventions;
 using KaraW3B.Server.Host.Helpers;
@@ -26,26 +28,32 @@ namespace KaraW3B.Server.Host
         {
             services.Configure<JsonOptions>(o => JsonHelper.ConfigureJsonSerializer(o.JsonSerializerOptions));
 
+            var settingsService = new SettingsService(KaraW3BApiConstants.ConfigPath);
+            services.AddSingleton<ISettingsService>(settingsService);
+
             services.AddDbContext<KaraW3BDbContext>();
 
             services.AddControllers(o =>
                 o.Conventions.Add(new GlobalRoutePrefixConvention(KaraW3BApiConstants.ApiMainRoutePrefix)));
             services.AddSignalR();
 
-            services.AddSwaggerGen(c =>
+            if (settingsService.GetSettingsAsync(CancellationToken.None).Result.SwaggerEnabled)
             {
-                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                c.IncludeXmlComments(xmlPath, true);
-                c.EnableAnnotations();
-                c.SwaggerDoc(KaraW3BConstants.ApplicationName, new OpenApiInfo
+                services.AddSwaggerGen(c =>
                 {
-                    Title = KaraW3BConstants.ApplicationName,
-                    Version = $"{GetType().Assembly.GetName().Version}",
-                    Description = "KaraW3B allows you to manage and server your karaoke sound files"
+                    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                    c.IncludeXmlComments(xmlPath, true);
+                    c.EnableAnnotations();
+                    c.SwaggerDoc(KaraW3BConstants.ApplicationName, new OpenApiInfo
+                    {
+                        Title = KaraW3BConstants.ApplicationName,
+                        Version = $"{GetType().Assembly.GetName().Version}",
+                        Description = "KaraW3B allows you to manage and server your karaoke sound files"
+                    });
+                    c.DocumentAsyncFilter<RoutePrefixDocumentFilter>(KaraW3BApiConstants.ApiMainRoutePrefix);
                 });
-                c.DocumentAsyncFilter<RoutePrefixDocumentFilter>(KaraW3BApiConstants.ApiMainRoutePrefix);
-            });
+            }
 
             RegisterServices(services);
             RegisterProviders(services);
@@ -75,27 +83,31 @@ namespace KaraW3B.Server.Host
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 
-            var swaggerPrefix = KaraW3BApiConstants.ApiMainRoutePrefix + "/swagger";
-            const string docName = "openapi.json";
-            app.UseSwagger(c =>
+            var settingsService = app.ApplicationServices.GetService<ISettingsService>();
+            if (settingsService.GetSettingsAsync(CancellationToken.None).Result.SwaggerEnabled)
             {
-                c.RouteTemplate = swaggerPrefix + "/{documentName}/" + docName;
-                c.PreSerializeFilters.Add((swaggerDoc, httpReq) =>
+                var swaggerPrefix = KaraW3BApiConstants.ApiMainRoutePrefix + "/swagger";
+                const string docName = "openapi.json";
+                app.UseSwagger(c =>
                 {
-                    swaggerDoc.Servers = new List<OpenApiServer>
+                    c.RouteTemplate = swaggerPrefix + "/{documentName}/" + docName;
+                    c.PreSerializeFilters.Add((swaggerDoc, httpReq) =>
                     {
-                        new()
+                        swaggerDoc.Servers = new List<OpenApiServer>
                         {
-                            Url = $"{httpReq.Scheme}://{httpReq.Host.Value}/{KaraW3BApiConstants.ApiMainRoutePrefix}"
-                        }
-                    };
+                            new()
+                            {
+                                Url = $"{httpReq.Scheme}://{httpReq.Host.Value}/{KaraW3BApiConstants.ApiMainRoutePrefix}"
+                            }
+                        };
+                    });
                 });
-            });
-            app.UseSwaggerUI(c =>
-            {
-                c.RoutePrefix = swaggerPrefix;
-                c.SwaggerEndpoint($"{KaraW3BConstants.ApplicationName}/{docName}", KaraW3BConstants.ApplicationName);
-            });
+                app.UseSwaggerUI(c =>
+                {
+                    c.RoutePrefix = swaggerPrefix;
+                    c.SwaggerEndpoint($"{KaraW3BConstants.ApplicationName}/{docName}", KaraW3BConstants.ApplicationName);
+                });
+            }
         }
     }
 }
