@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Threading;
-using KaraW3B.Server.Core.Services.Scheduler;
 using KaraW3B.Server.Songs.Core.Helpers;
 using KaraW3B.Server.Songs.Core.Persistence;
 using KaraW3B.Server.Songs.Core.Services.FFmpeg;
@@ -65,7 +64,8 @@ namespace KaraW3B.Server.Songs.Host
             services
                 .AddSingleton<ISongFileInterpreterService, SongFileInterpreterService>()
                 .AddSingleton<ISchedulerService, SchedulerService>()
-                .AddSingleton<IFFmpegService, FFmpegService>();
+                .AddSingleton<IFFmpegService, FFmpegService>()
+                .AddHostedService(s => s.GetService<ISchedulerService>());
         }
 
         private static void RegisterProviders(IServiceCollection services)

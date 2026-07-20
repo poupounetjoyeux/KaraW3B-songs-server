@@ -1,6 +1,5 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using KaraW3B.Server.Core.Services.Scheduler;
 using KaraW3B.Server.Songs.Core.Helpers;
 using KaraW3B.Server.Songs.Core.Jobs;
 using log4net;
