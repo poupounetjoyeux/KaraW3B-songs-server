@@ -16,6 +16,11 @@ namespace KaraW3B.Server.Songs.Host
     {
         public static async Task Main(string[] args)
         {
+            if (!Directory.Exists(KaraW3BApiConstants.ConfigDirectoryPath))
+            {
+                Directory.CreateDirectory(KaraW3BApiConstants.ConfigDirectoryPath);
+            }
+
             var logger = ConfigureLog4NetAndGetLogger();
             if (!await KaraW3BDbContext.EnsureDatabase(logger))
             {
@@ -37,6 +42,11 @@ namespace KaraW3B.Server.Songs.Host
 
         private static ILog ConfigureLog4NetAndGetLogger()
         {
+            if (!File.Exists(KaraW3BApiConstants.Log4NetConfigPath))
+            {
+                File.Copy(KaraW3BApiConstants.DefaultLog4NetConfigPath, KaraW3BApiConstants.Log4NetConfigPath);
+            }
+
             var logRepository = LogManager.GetRepository(Assembly.GetExecutingAssembly());
             XmlConfigurator.Configure(logRepository, new FileInfo(KaraW3BApiConstants.Log4NetConfigPath));
             return LogManager.GetLogger(KaraW3BConstants.ApplicationName);

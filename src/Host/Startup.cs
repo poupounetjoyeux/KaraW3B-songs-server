@@ -29,7 +29,7 @@ namespace KaraW3B.Server.Songs.Host
         {
             services.Configure<JsonOptions>(o => JsonHelper.ConfigureJsonSerializer(o.JsonSerializerOptions));
 
-            var settingsService = new SettingsService(KaraW3BApiConstants.ConfigPath);
+            var settingsService = new SettingsService(KaraW3BApiConstants.ConfigFilePath);
             services.AddSingleton<ISettingsService>(settingsService);
 
             services.AddDbContext<KaraW3BDbContext>();

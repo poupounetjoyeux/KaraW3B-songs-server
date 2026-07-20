@@ -18,7 +18,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Update="Config\config.log4net.xml">
+		<None Update="log4net\config.log4net.xml">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
