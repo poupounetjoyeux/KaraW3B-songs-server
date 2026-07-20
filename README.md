@@ -4,9 +4,7 @@
   <img src="https://github.com/KaraW3B/resources/blob/49e3a6cfac800ed1ca2b6af4f19e7355d640d8f6/logo.png" style="height:300px;width:auto;" alt="KaraW3B Logo">
 </p>
 
-# KaraW3B servers
-
-# 🎙️ Songs server
+# 🎶 KaraW3B Songs Server
 
 The KaraW3B songs server is the hearth of the project and will serves all your songs collections through an API
 
