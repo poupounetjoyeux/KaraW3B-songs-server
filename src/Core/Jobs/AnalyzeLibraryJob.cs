@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Threading;
-using System.Threading.Tasks;
-using KaraW3B.Server.Songs.Core.Helpers;
+﻿using KaraW3B.Server.Songs.Core.Helpers;
 using KaraW3B.Server.Songs.Core.Models;
 using KaraW3B.Server.Songs.Core.Persistence;
 using KaraW3B.Server.Songs.Core.Persistence.Models.Libraries;
@@ -19,6 +11,14 @@ using KaraW3B.Server.Songs.Models.Songs.Alerts;
 using log4net;
 using Microsoft.EntityFrameworkCore;
 using Quartz;
+using System;
+using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace KaraW3B.Server.Songs.Core.Jobs
 {
@@ -27,16 +27,24 @@ namespace KaraW3B.Server.Songs.Core.Jobs
         public static readonly JobKey JobKey = new(nameof(AnalyzeLibraryJob), KaraW3BConstants.ApplicationName);
         private readonly ILog _logger = LogManager.GetLogger(JobKey.Name);
 
-        public const string LibraryKey = "library";
+        public const string LibraryIdKey = "library_id";
+        public const string LibraryPathKey = "library_path";
         public const string AnalyzeTypeKey = "analyze_type";
         public const string SongParserServiceKey = "song_parser_service";
+        public const string MaxParallelismKey = "max_parallelism";
         public const string FFmpegServiceKey = "FFmpeg_service";
 
         public async Task Execute(IJobExecutionContext context)
         {
-            if (context.MergedJobDataMap[LibraryKey] is not DbLibrary library)
+            if (context.MergedJobDataMap[LibraryIdKey] is not Guid libraryId)
             {
-                _logger.Error("Unable to retrieve a valid library from job context");
+                _logger.Error("Unable to retrieve a valid library ID from job context");
+                return;
+            }
+
+            if (context.MergedJobDataMap[LibraryPathKey] is not string libraryPath || string.IsNullOrEmpty(libraryPath))
+            {
+                _logger.Error("Unable to retrieve a valid library path from job context");
                 return;
             }
 
@@ -52,6 +60,12 @@ namespace KaraW3B.Server.Songs.Core.Jobs
                 return;
             }
 
+            if (context.MergedJobDataMap[MaxParallelismKey] is not int maxParallelism)
+            {
+                _logger.Error("Unable to retrieve a valid max parallelism value from job context");
+                return;
+            }
+
             if (context.MergedJobDataMap[FFmpegServiceKey] is not IFFmpegService ffmpegService)
             {
                 _logger.Error("Unable to retrieve a valid FFmpeg service from job context");
@@ -59,25 +73,23 @@ namespace KaraW3B.Server.Songs.Core.Jobs
             }
 
             await using var dbContext = new KaraW3BDbContext();
-            library = dbContext.Attach(library).Entity;
-            if (library.AnalyzeStatus == LibraryAnalyzeStatus.Analyzing)
+            if (!await DbLibrary.TryMarkAsAnalyzingAsync(dbContext, libraryId, context.CancellationToken))
             {
-                _logger.Warn($"Library with ID {library.Id} is already analyzing.. Aborting..");
+                _logger.Warn($"Library with ID {libraryId} is not currently queued for analyze.. Aborting..");
                 return;
             }
+            
 
-            library.AnalyzeStatus = LibraryAnalyzeStatus.Analyzing;
-            library.LastAnalyzeMessage = null;
-            await dbContext.SaveChangesAsync(context.CancellationToken);
-
-            var directory = new DirectoryInfo(library.Path);
+            var directory = new DirectoryInfo(libraryPath);
             if (!directory.Exists)
             {
-                _logger.Error($"Directory '{directory.FullName}' doesn't exist");
+                var message = $"Directory '{directory.FullName}' doesn't exist";
+                await DbLibrary.MarkAs(dbContext, libraryId, false, message, context.CancellationToken);
+                _logger.Error(message);
                 return;
             }
 
-            _logger.Info($"Start analyzing library '{library.Name}' in mode '{analyzeType}'");
+            _logger.Info($"Start analyzing library '{libraryId}' in mode '{analyzeType}'");
             var timeWatcher = new Stopwatch();
             timeWatcher.Start();
 
@@ -87,11 +99,14 @@ namespace KaraW3B.Server.Songs.Core.Jobs
                 _logger.Info($"Found {foundFiles.Length} potential song file(s) to analyze");
 
                 var parsedSongIds = new ConcurrentBag<Guid>();
-                await Parallel.ForEachAsync(foundFiles, context.CancellationToken,
-                    (f, c) => ProcessSongFile(songParserService, ffmpegService, library.Id, analyzeType, parsedSongIds, f, c));
+                await Parallel.ForEachAsync(foundFiles,
+                    new ParallelOptions
+                        { CancellationToken = context.CancellationToken, MaxDegreeOfParallelism = maxParallelism },
+                    (f, c) => ProcessSongFile(songParserService, ffmpegService, libraryId, analyzeType, parsedSongIds,
+                        f, c));
 
                 var songsToDelete =
-                     await dbContext.Songs.Where(s => s.LibraryId == library.Id && !parsedSongIds.Contains(s.Id))
+                     await dbContext.Songs.Where(s => s.LibraryId == libraryId && !parsedSongIds.Contains(s.Id))
                         .ToListAsync(context.CancellationToken);
                 if (songsToDelete.Count > 0)
                 {
@@ -100,18 +115,17 @@ namespace KaraW3B.Server.Songs.Core.Jobs
                 }
 
                 timeWatcher.Stop();
-                library.AnalyzeStatus = LibraryAnalyzeStatus.Success;
-                library.LastAnalyzeMessage = $"Library {library.Name} analyzed {parsedSongIds.Count} song(s) and deleted {songsToDelete.Count} song(s) in {timeWatcher.Elapsed} ms";
-                await dbContext.SaveChangesAsync(context.CancellationToken);
-                _logger.Info(library.LastAnalyzeMessage);
+
+                var message = $"Library '{libraryId}' analyzed {parsedSongIds.Count} song(s) and deleted {songsToDelete.Count} song(s) in {timeWatcher.Elapsed} ms";
+                await DbLibrary.MarkAs(dbContext, libraryId, true, message, context.CancellationToken);
+                _logger.Info(message);
             }
             catch(Exception e) 
             {
                 timeWatcher.Stop();
-                library.AnalyzeStatus = LibraryAnalyzeStatus.Error;
-                library.LastAnalyzeMessage = $"The library analyze encounter an exception after {timeWatcher.Elapsed} ms: {e}";
-                await dbContext.SaveChangesAsync(context.CancellationToken);
-                _logger.Error(library.LastAnalyzeMessage);
+                var message = $"The library analyze encounter an exception after {timeWatcher.Elapsed} ms: {e}";
+                await DbLibrary.MarkAs(dbContext, libraryId, false, message, context.CancellationToken);
+                _logger.Error(message);
             }
         }
 
@@ -231,12 +245,12 @@ namespace KaraW3B.Server.Songs.Core.Jobs
             ConversionStatus conversionStatus;
             if (fileType == FileType.Video)
             {
-                conversionStatus = await ffmpegService.GetVideoCompatibility(filePath, cancellationToken);
+                conversionStatus = await ffmpegService.GetVideoCompatibilityAsync(filePath, cancellationToken);
                 song.VideoConversion = conversionStatus;
             }
             else
             {
-                conversionStatus = await ffmpegService.GetAudioCompatibility(filePath, cancellationToken);
+                conversionStatus = await ffmpegService.GetAudioCompatibilityAsync(filePath, cancellationToken);
                 switch (fileType)
                 {
                     case FileType.Audio:

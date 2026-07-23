@@ -1,12 +1,10 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Hosting;
-using Quartz;
 
 namespace KaraW3B.Server.Songs.Core.Services.Scheduler
 {
-    public interface ISchedulerService : IHostedService
+    public interface ISchedulerService
     {
-        Task StartJob(JobKey jobKey, JobDataMap dataMap, CancellationToken cancellationToken);
+        Task<ApiScheduler> RegisterSchedulerAsync(string schedulerName, int maxConcurrency, CancellationToken cancellationToken);
     }
 }

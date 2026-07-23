@@ -6,7 +6,7 @@ namespace KaraW3B.Server.Songs.Core.Services.FFmpeg
 {
     public interface IFFmpegService
     {
-        public Task<ConversionStatus> GetVideoCompatibility(string videoPath, CancellationToken cancellationToken);
-        public Task<ConversionStatus> GetAudioCompatibility(string audioPath, CancellationToken cancellationToken);
+        public Task<ConversionStatus> GetVideoCompatibilityAsync(string videoPath, CancellationToken cancellationToken);
+        public Task<ConversionStatus> GetAudioCompatibilityAsync(string audioPath, CancellationToken cancellationToken);
     }
 }

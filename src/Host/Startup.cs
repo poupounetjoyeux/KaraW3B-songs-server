@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Threading;
 using KaraW3B.Server.Songs.Core.Helpers;
 using KaraW3B.Server.Songs.Core.Persistence;
 using KaraW3B.Server.Songs.Core.Services.FFmpeg;
@@ -37,7 +36,7 @@ namespace KaraW3B.Server.Songs.Host
                 o.Conventions.Add(new GlobalRoutePrefixConvention(KaraW3BApiConstants.ApiMainRoutePrefix)));
             services.AddSignalR();
 
-            if (settingsService.GetSettingsAsync(CancellationToken.None).Result.SwaggerEnabled)
+            if (settingsService.Settings.SwaggerEnabled)
             {
                 services.AddSwaggerGen(c =>
                 {
@@ -64,8 +63,7 @@ namespace KaraW3B.Server.Songs.Host
             services
                 .AddSingleton<ISongFileInterpreterService, SongFileInterpreterService>()
                 .AddSingleton<ISchedulerService, SchedulerService>()
-                .AddSingleton<IFFmpegService, FFmpegService>()
-                .AddHostedService(s => s.GetService<ISchedulerService>());
+                .AddSingleton<IFFmpegService, FFmpegService>();
         }
 
         private static void RegisterProviders(IServiceCollection services)
@@ -84,7 +82,7 @@ namespace KaraW3B.Server.Songs.Host
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 
             var settingsService = app.ApplicationServices.GetService<ISettingsService>();
-            if (settingsService.GetSettingsAsync(CancellationToken.None).Result.SwaggerEnabled)
+            if (settingsService.Settings.SwaggerEnabled)
             {
                 var swaggerPrefix = KaraW3BApiConstants.ApiMainRoutePrefix + "/swagger";
                 const string docName = "openapi.json";

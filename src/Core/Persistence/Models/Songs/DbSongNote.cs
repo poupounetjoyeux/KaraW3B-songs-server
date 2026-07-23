@@ -59,6 +59,7 @@ namespace KaraW3B.Server.Songs.Core.Persistence.Models.Songs
                 '*' => NoteType.Golden,
                 'R' => NoteType.Rap,
                 'G' => NoteType.GoldenRap,
+                '-' => NoteType.EndOfPhrase,
                 _ => NoteType.Freestyle
             };
         }
@@ -71,6 +72,7 @@ namespace KaraW3B.Server.Songs.Core.Persistence.Models.Songs
                 NoteType.Golden => '*',
                 NoteType.Rap => 'R',
                 NoteType.GoldenRap => 'G',
+                NoteType.EndOfPhrase => '-',
                 _ => 'F'
             };
         }

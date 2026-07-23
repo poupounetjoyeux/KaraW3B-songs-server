@@ -11,31 +11,32 @@ namespace KaraW3B.Server.Songs.Core.Services.Settings
     public sealed class SettingsService : ISettingsService
     {
         private readonly string _settingsPath;
-        private KaraW3BSettings _settings;
+        private readonly KaraW3BSettings _settings;
 
         public SettingsService(string settingsPath)
         {
             _settingsPath = settingsPath;
+            _settings = LoadSettings();
+
+            // This is in case some new options where added or the initial file not exist
+            WriteSettings(CancellationToken.None).Wait();
         }
 
-        public async Task<KaraW3BSettings> GetSettingsAsync(CancellationToken cancellationToken)
+        public KaraW3BSettings LoadSettings()
         {
-            if (_settings != null)
-            {
-                return _settings;
-            }
-
             if (!File.Exists(_settingsPath))
             {
-                _settings = new KaraW3BSettings();
-                await WriteSettings(_settings, cancellationToken);
-                return _settings;
+                return new KaraW3BSettings();
             }
 
-            await using var settingsFile = new FileStream(_settingsPath, FileMode.Open, FileAccess.Read);
-            _settings = await JsonSerializer.DeserializeAsync<KaraW3BSettings>(settingsFile, JsonHelper.DefaultJsonSerializerOptions, cancellationToken);
-            return _settings;
+            using var settingsFile = new FileStream(_settingsPath, FileMode.Open, FileAccess.Read);
+            return JsonSerializer.Deserialize<KaraW3BSettings>(settingsFile, JsonHelper.DefaultJsonSerializerOptions);
+
         }
+
+        public event EventHandler SettingsUpdated;
+
+        public KaraW3BSettings Settings => _settings.Clone();
 
         public async Task<bool> UpdateSettingsAsync(Action<KaraW3BSettings> updateSettings, CancellationToken cancellationToken)
         {
@@ -44,16 +45,16 @@ namespace KaraW3B.Server.Songs.Core.Services.Settings
                 return false;
             }
 
-            var settings = await GetSettingsAsync(cancellationToken);
-            updateSettings(settings);
-            await WriteSettings(settings, cancellationToken);
+            updateSettings(_settings);
+            await WriteSettings(cancellationToken);
+            SettingsUpdated?.Invoke(this, EventArgs.Empty);
             return true;
         }
 
-        private async Task WriteSettings(KaraW3BSettings settings, CancellationToken cancellationToken)
+        private async Task WriteSettings(CancellationToken cancellationToken)
         {
             await using var settingsFile = new FileStream(_settingsPath, FileMode.OpenOrCreate, FileAccess.Write);
-            await JsonSerializer.SerializeAsync(settingsFile, settings, JsonHelper.DefaultJsonSerializerOptions, cancellationToken);
+            await JsonSerializer.SerializeAsync(settingsFile, _settings, JsonHelper.DefaultJsonSerializerOptions, cancellationToken);
         }
     }
 }

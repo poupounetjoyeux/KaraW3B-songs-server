@@ -1,59 +1,42 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using KaraW3B.Server.Songs.Core.Helpers;
-using KaraW3B.Server.Songs.Core.Jobs;
-using log4net;
+﻿using log4net;
 using Quartz;
+using Quartz.Impl;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using KaraW3B.Server.Songs.Core.Models.Exceptions;
 
 namespace KaraW3B.Server.Songs.Core.Services.Scheduler
 {
-    public sealed class SchedulerService : ISchedulerService
+    public sealed class SchedulerService : ISchedulerService, IAsyncDisposable
     {
         private readonly ILog _logger = LogManager.GetLogger(nameof(SchedulerService));
 
-        private IScheduler _scheduler;
-
-        public async Task StartAsync(CancellationToken cancellationToken)
+        public async Task<ApiScheduler> RegisterSchedulerAsync(string schedulerName, int maxConcurrency, CancellationToken cancellationToken)
         {
-            var schedulerBuilder = SchedulerBuilder.Create();
-            schedulerBuilder.SchedulerName = $"{KaraW3BConstants.ApplicationName}_Scheduler";
-            schedulerBuilder.SchedulerId = $"{KaraW3BConstants.ApplicationName}_Scheduler";
-            _scheduler = await schedulerBuilder.UseDefaultThreadPool(x => x.MaxConcurrency = 5).BuildScheduler();
-            await _scheduler.Start(cancellationToken);
-            _logger.Info($"Scheduler '{_scheduler.SchedulerName}' was started");
-
-            await RegisterJobs(cancellationToken);
-        }
-
-        private async Task RegisterJobs(CancellationToken cancellationToken)
-        {
-            var job = JobBuilder.Create<AnalyzeLibraryJob>()
-                .WithIdentity(AnalyzeLibraryJob.JobKey)
-                .StoreDurably()
-                .Build();
-
-            await _scheduler.AddJob(job, false, cancellationToken);
-            _logger.Info($"Job {job.Key} was registered");
-        }
-
-        public async Task StopAsync(CancellationToken cancellationToken)
-        {
-            _logger.Info(
-                $"Scheduler '{_scheduler.SchedulerName}' is shutting down. Waiting for last running jobs to finish");
-            await _scheduler.Shutdown(true, cancellationToken);
-            _logger.Info($"Scheduler '{_scheduler.SchedulerName}' is now shutdown");
-        }
-
-        public async Task StartJob(JobKey jobKey, JobDataMap dataMap, CancellationToken cancellationToken)
-        {
-            if (!await _scheduler.CheckExists(jobKey, cancellationToken))
+            if (maxConcurrency < 1)
             {
-                _logger.Error($"The job {jobKey} is not registered on the scheduler");
-                return;
+                throw new KaraW3BSongsServerException("A scheduler must have at least 1 execution thread");
             }
 
-            await _scheduler.TriggerJob(jobKey, dataMap, cancellationToken);
-            _logger.Info($"The job {jobKey} was triggered");
+            var schedulerBuilder = SchedulerBuilder.Create();
+            schedulerBuilder.SchedulerName = schedulerName;
+            schedulerBuilder.SchedulerId = Guid.NewGuid().ToString();
+            var scheduler = await schedulerBuilder.UseDefaultThreadPool(x => x.MaxConcurrency = maxConcurrency).BuildScheduler();
+            await scheduler.Start(cancellationToken);
+            _logger.Info($"Scheduler '{scheduler.SchedulerName}' was started");
+            return new ApiScheduler(scheduler, _logger);
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            foreach (var scheduler in SchedulerRepository.Instance.LookupAll())
+            {
+                _logger.Info(
+                    $"Scheduler '{scheduler.SchedulerName}' is shutting down. Waiting for last running jobs to finish");
+                await scheduler.Shutdown(true, CancellationToken.None);
+                _logger.Info($"Scheduler '{scheduler.SchedulerName}' is now shutdown");
+            }
         }
     }
 }

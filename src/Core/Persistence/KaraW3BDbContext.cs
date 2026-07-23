@@ -1,9 +1,12 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using KaraW3B.Server.Songs.Core.Persistence.Converters;
 using KaraW3B.Server.Songs.Core.Persistence.Models.Libraries;
 using KaraW3B.Server.Songs.Core.Persistence.Models.Songs;
+using KaraW3B.Server.Songs.Models.Libraries;
 using log4net;
 using Microsoft.EntityFrameworkCore;
 
@@ -42,7 +45,7 @@ namespace KaraW3B.Server.Songs.Core.Persistence
             configurationBuilder.Properties<DbSongMedley>().HaveConversion<SongMedleyValueConverter>();
         }
 
-        public static async Task<bool> EnsureDatabase(ILog logger)
+        public static async Task<bool> EnsureDatabase(ILog logger, CancellationToken cancellationToken)
         {
             try
             {
@@ -53,10 +56,10 @@ namespace KaraW3B.Server.Songs.Core.Persistence
                 }
 
                 await using var context = new KaraW3BDbContext();
-                await context.Database.MigrateAsync();
+                await context.Database.MigrateAsync(cancellationToken: cancellationToken);
                 logger.Info("Database initialized successfully");
 
-                ReinitFlagsAfterPanicShutdown(context);
+                await ReinitFlagsAfterPanicShutdown(context, cancellationToken);
 
                 return true;
             }
@@ -67,17 +70,14 @@ namespace KaraW3B.Server.Songs.Core.Persistence
             }
         }
 
-        private static async Task ReinitFlagsAfterPanicShutdown(KaraW3BDbContext dbContext)
+        private static async Task ReinitFlagsAfterPanicShutdown(KaraW3BDbContext dbContext, CancellationToken cancellationToken)
         {
-            foreach(var library in dbContext.Libraries)
-            {
-                if(library.AnalyzeStatus == LibraryAnalyzeStatus.Analyzing)
-                {
-                    library.AnalyzeStatus = LibraryAnalyzeStatus.Error;
-                    library.LastAnalyzeMessage = "The analyze was interupted";
-                }
-            }
-            await dbContext.SaveChangesAsync();
+            await dbContext.Libraries
+                .Where(l => !l.CanStartAnalyze)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(l => l.AnalyzeStatus, LibraryAnalyzeStatus.Error)
+                    .SetProperty(l => l.LastAnalyzeMessage, "The analyze was interrupted"),
+                cancellationToken: cancellationToken);
         }
     }
 }

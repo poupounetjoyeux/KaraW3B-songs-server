@@ -1,5 +1,6 @@
 using System.IO;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using KaraW3B.Server.Songs.Core.Helpers;
 using KaraW3B.Server.Songs.Core.Persistence;
@@ -22,7 +23,7 @@ namespace KaraW3B.Server.Songs.Host
             }
 
             var logger = ConfigureLog4NetAndGetLogger();
-            if (!await KaraW3BDbContext.EnsureDatabase(logger))
+            if (!await KaraW3BDbContext.EnsureDatabase(logger, CancellationToken.None))
             {
                 return;
             }

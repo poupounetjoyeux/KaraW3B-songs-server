@@ -6,6 +6,7 @@ using FFMpegCore.Enums;
 using KaraW3B.Server.Songs.Core.Helpers;
 using KaraW3B.Server.Songs.Core.Models;
 using KaraW3B.Server.Songs.Core.Services.Settings;
+using System;
 
 namespace KaraW3B.Server.Songs.Core.Services.FFmpeg
 {
@@ -15,19 +16,19 @@ namespace KaraW3B.Server.Songs.Core.Services.FFmpeg
 
         public FFmpegService(ISettingsService settingsService)
         {
-            var customFFmpegPath = settingsService.GetSettingsAsync(CancellationToken.None).Result.FFmpegPath;
+            var customFFmpegPath = settingsService.Settings.FFmpegPath;
             if (!string.IsNullOrEmpty(customFFmpegPath))
             {
                 GlobalFFOptions.Configure(options => options.BinaryFolder = customFFmpegPath);
             }
         }
 
-        public async Task<ConversionStatus> GetVideoCompatibility(string videoPath, CancellationToken cancellationToken)
+        public async Task<ConversionStatus> GetVideoCompatibilityAsync(string videoPath, CancellationToken cancellationToken)
         {
             var mediaInfos = await FFProbe.AnalyseAsync(videoPath, cancellationToken: cancellationToken);
 
             if ((mediaInfos.Format.Tags?.TryGetValue(EncodedByTag, out var value) ?? false) &&
-                value == KaraW3BConstants.ApplicationName)
+                value.StartsWith(KaraW3BConstants.ApplicationName, StringComparison.OrdinalIgnoreCase))
             {
                 return ConversionStatus.Compatible;
             }
@@ -43,11 +44,6 @@ namespace KaraW3B.Server.Songs.Core.Services.FFmpeg
                 return ConversionStatus.Mandatory;
             }
 
-            if (videoStream.PixelFormat != "yuv420p")
-            {
-                return ConversionStatus.Recommended;
-            }
-
             if (videoStream.CodecName != VideoCodec.LibX264.Name)
             {
                 return ConversionStatus.Recommended;
@@ -56,7 +52,7 @@ namespace KaraW3B.Server.Songs.Core.Services.FFmpeg
             return ConversionStatus.Compatible;
         }
 
-        public async Task<ConversionStatus> GetAudioCompatibility(string audioPath, CancellationToken cancellationToken)
+        public async Task<ConversionStatus> GetAudioCompatibilityAsync(string audioPath, CancellationToken cancellationToken)
         {
             var mediaInfos = await FFProbe.AnalyseAsync(audioPath, cancellationToken: cancellationToken);
 
@@ -85,6 +81,9 @@ namespace KaraW3B.Server.Songs.Core.Services.FFmpeg
             return ConversionStatus.Compatible;
         }
 
+
+
+
         private class MovFlagsArgument : IArgument
         {
             private readonly string _flag;
@@ -99,7 +98,7 @@ namespace KaraW3B.Server.Songs.Core.Services.FFmpeg
 
         private class KaraW3BConvertedMetadataArgument : IArgument
         {
-            public string Text => $"-metadata {EncodedByTag}=\"{KaraW3BConstants.ApplicationName}\"";
+            public string Text => $"-metadata {EncodedByTag}=\"{KaraW3BConstants.ApplicationName}-v{KaraW3BConstants.ApplicationVersion}\"";
         }
     }
 }

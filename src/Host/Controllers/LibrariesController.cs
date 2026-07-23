@@ -119,7 +119,7 @@ namespace KaraW3B.Server.Songs.Host.Controllers
                 return NotFound($"The library with ID {libraryId} doesn't exist");
             }
 
-            if (library.AnalyzeStatus == LibraryAnalyzeStatus.Analyzing)
+            if (!library.CanStartAnalyze)
             {
                 return BadRequest($"The library with ID {libraryId} is already analyzing");
             }
