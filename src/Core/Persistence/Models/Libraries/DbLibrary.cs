@@ -12,6 +12,11 @@ namespace KaraW3B.Server.Songs.Core.Persistence.Models.Libraries
     [Table("Libraries")]
     public class DbLibrary
     {
+        public static readonly LibraryAnalyzeStatus[] AnalyzingStatus = {
+            LibraryAnalyzeStatus.Pending,
+            LibraryAnalyzeStatus.Analyzing
+        };
+
         [Key]
         public Guid Id { get; set; } = Guid.NewGuid();
 
@@ -31,8 +36,7 @@ namespace KaraW3B.Server.Songs.Core.Persistence.Models.Libraries
         public string LastAnalyzeMessage { get; set; }
 
         [NotMapped]
-        public bool CanStartAnalyze =>
-            AnalyzeStatus is not (LibraryAnalyzeStatus.Pending or LibraryAnalyzeStatus.Analyzing);
+        public bool CanStartAnalyze => !AnalyzingStatus.Contains(AnalyzeStatus);
 
         public static async Task<bool> TryMarkAsPendingAsync(KaraW3BDbContext dbContext, Guid libraryId,
             CancellationToken cancellationToken)

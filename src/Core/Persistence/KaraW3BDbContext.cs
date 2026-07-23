@@ -73,7 +73,7 @@ namespace KaraW3B.Server.Songs.Core.Persistence
         private static async Task ReinitFlagsAfterPanicShutdown(KaraW3BDbContext dbContext, CancellationToken cancellationToken)
         {
             await dbContext.Libraries
-                .Where(l => !l.CanStartAnalyze)
+                .Where(l => DbLibrary.AnalyzingStatus.Contains(l.AnalyzeStatus))
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(l => l.AnalyzeStatus, LibraryAnalyzeStatus.Error)
                     .SetProperty(l => l.LastAnalyzeMessage, "The analyze was interrupted"),
