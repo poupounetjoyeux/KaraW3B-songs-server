@@ -47,20 +47,10 @@ namespace KaraW3B.Server.Songs.Host.Providers.Songs
             return _dbContext.Songs.SingleOrDefaultAsync(s => s.Id == songId, cancellationToken);
         }
 
-        public async Task<IActionResult> GetSongFileStream(DbSong song, FileType fileType,
+        public async Task<PhysicalFileResult> GetSongFileStream(DbSong song, FileType fileType,
             CancellationToken cancellationToken)
         {
             var filePath = song.GetSongFilePath(fileType);
-            if (string.IsNullOrEmpty(filePath))
-            {
-                return null;
-            }
-
-            if (!song.IsSongFileCompatible(fileType))
-            {
-                return new BadRequestObjectResult(
-                    $"The file {fileType} for song {song.Id} isn't web player compatible");
-            }
 
             var contentType = "application/octet-stream";
             if (_fileExtensionContentTypeProvider.TryGetContentType(filePath, out var gotContentType))

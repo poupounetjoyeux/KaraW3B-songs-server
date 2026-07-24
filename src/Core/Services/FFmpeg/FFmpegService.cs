@@ -7,6 +7,7 @@ using KaraW3B.Server.Songs.Core.Helpers;
 using KaraW3B.Server.Songs.Core.Models;
 using KaraW3B.Server.Songs.Core.Services.Settings;
 using System;
+using KaraW3B.Server.Songs.Models.Songs;
 
 namespace KaraW3B.Server.Songs.Core.Services.FFmpeg
 {
@@ -23,62 +24,62 @@ namespace KaraW3B.Server.Songs.Core.Services.FFmpeg
             }
         }
 
-        public async Task<ConversionStatus> GetVideoCompatibilityAsync(string videoPath, CancellationToken cancellationToken)
+        public async Task<BrowserCompatibility> GetVideoCompatibilityAsync(string videoPath, CancellationToken cancellationToken)
         {
             var mediaInfos = await FFProbe.AnalyseAsync(videoPath, cancellationToken: cancellationToken);
 
             if ((mediaInfos.Format.Tags?.TryGetValue(EncodedByTag, out var value) ?? false) &&
                 value.StartsWith(KaraW3BConstants.ApplicationName, StringComparison.OrdinalIgnoreCase))
             {
-                return ConversionStatus.Compatible;
+                return BrowserCompatibility.Compatible;
             }
 
             if (!mediaInfos.Format.FormatName.Contains("mp4"))
             {
-                return ConversionStatus.Mandatory;
+                return BrowserCompatibility.ConversionMandatory;
             }
 
             var videoStream = mediaInfos.PrimaryVideoStream;
             if (videoStream == null)
             {
-                return ConversionStatus.Mandatory;
+                return BrowserCompatibility.ConversionMandatory;
             }
 
             if (videoStream.CodecName != VideoCodec.LibX264.Name)
             {
-                return ConversionStatus.Recommended;
+                return BrowserCompatibility.ConversionRecommended;
             }
 
-            return ConversionStatus.Compatible;
+            return BrowserCompatibility.Compatible;
         }
 
-        public async Task<ConversionStatus> GetAudioCompatibilityAsync(string audioPath, CancellationToken cancellationToken)
+        public async Task<BrowserCompatibility> GetAudioCompatibilityAsync(string audioPath, CancellationToken cancellationToken)
         {
             var mediaInfos = await FFProbe.AnalyseAsync(audioPath, cancellationToken: cancellationToken);
 
             if ((mediaInfos.Format.Tags?.TryGetValue(EncodedByTag, out var value) ?? false) &&
                 value == KaraW3BConstants.ApplicationName)
             {
-                return ConversionStatus.Compatible;
+                return BrowserCompatibility.Compatible;
             }
 
             if (mediaInfos.Format.FormatName != "mp3")
             {
-                return ConversionStatus.Mandatory;
+                return BrowserCompatibility.ConversionMandatory;
             }
 
             var audioStream = mediaInfos.PrimaryAudioStream;
             if (audioStream == null)
             {
-                return ConversionStatus.Mandatory;
+                return BrowserCompatibility.ConversionMandatory;
             }
 
             if (audioStream.CodecName != "mp3")
             {
-                return ConversionStatus.Recommended;
+                return BrowserCompatibility.ConversionRecommended;
             }
 
-            return ConversionStatus.Compatible;
+            return BrowserCompatibility.Compatible;
         }
 
 

@@ -5,7 +5,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.IO;
 using System.Linq;
 using KaraW3B.Interpreters.Interfaces;
-using KaraW3B.Server.Songs.Core.Models;
 using KaraW3B.Server.Songs.Core.Persistence.Models.Libraries;
 using KaraW3B.Server.Songs.Models.Songs;
 using KaraW3B.Server.Songs.Models.Songs.Alerts;
@@ -127,16 +126,16 @@ namespace KaraW3B.Server.Songs.Core.Persistence.Models.Songs
         public DateTime LastParseTime { get; set; }
 
         [Required]
-        public ConversionStatus VideoConversion { get; set; }
+        public BrowserCompatibility AudioCompatibility { get; set; } = BrowserCompatibility.NotChecked;
 
         [Required]
-        public ConversionStatus AudioConversion { get; set; }
+        public BrowserCompatibility VideoCompatibility { get; set; } = BrowserCompatibility.NotChecked;
 
         [Required]
-        public ConversionStatus VocalsConversion { get; set; }
+        public BrowserCompatibility VocalsCompatibility { get; set; } = BrowserCompatibility.NotChecked;
 
         [Required]
-        public ConversionStatus InstrumentalConversion { get; set; }
+        public BrowserCompatibility InstrumentalCompatibility { get; set; } = BrowserCompatibility.NotChecked;
 
         #endregion
 
@@ -164,12 +163,36 @@ namespace KaraW3B.Server.Songs.Core.Persistence.Models.Songs
         {
             return fileType switch
             {
-                FileType.Video => VideoConversion != ConversionStatus.Mandatory,
-                FileType.Audio => AudioConversion != ConversionStatus.Mandatory,
-                FileType.Instrumental => InstrumentalConversion != ConversionStatus.Mandatory,
-                FileType.Vocals => VocalsConversion != ConversionStatus.Mandatory,
+                FileType.Video => VideoCompatibility != BrowserCompatibility.ConversionMandatory,
+                FileType.Audio => AudioCompatibility != BrowserCompatibility.ConversionMandatory,
+                FileType.Instrumental => InstrumentalCompatibility != BrowserCompatibility.ConversionMandatory,
+                FileType.Vocals => VocalsCompatibility != BrowserCompatibility.ConversionMandatory,
                 _ => true
             };
+        }
+
+        public void SetBrowserCompatibilityStatus(FileType fileType, BrowserCompatibility browserCompatibility)
+        {
+            if (fileType is FileType.Cover or FileType.Background)
+            {
+                return;
+            }
+
+            switch (fileType)
+            {
+                case FileType.Audio:
+                    AudioCompatibility = browserCompatibility;
+                    break;
+                case FileType.Video:
+                    VideoCompatibility = browserCompatibility;
+                    break;
+                case FileType.Instrumental:
+                    InstrumentalCompatibility = browserCompatibility;
+                    break;
+                case FileType.Vocals:
+                    VocalsCompatibility = browserCompatibility;
+                    break;
+            }
         }
 
         public Song ToSong()
@@ -211,17 +234,21 @@ namespace KaraW3B.Server.Songs.Core.Persistence.Models.Songs
                 LastParsedTime = LastParseTime,
                 HasFatal = Alerts.Any(a => a.Level == AlertLevel.Fatal),
                 HasErrors = Alerts.Any(a => a.Level == AlertLevel.Error),
-                HasWarnings = Alerts.Any(a => a.Level == AlertLevel.Warning)
+                HasWarnings = Alerts.Any(a => a.Level == AlertLevel.Warning),
+                AudioCompatibility = AudioCompatibility,
+                VideoCompatibility = VideoCompatibility,
+                VocalsCompatibility = VocalsCompatibility,
+                InstrumentalCompatibility = InstrumentalCompatibility
             };
             return songDto;
         }
 
         public bool IsNotLoadable()
         {
-            return VideoConversion == ConversionStatus.Mandatory ||
-                   AudioConversion == ConversionStatus.Mandatory ||
-                   InstrumentalConversion == ConversionStatus.Mandatory ||
-                   VocalsConversion == ConversionStatus.Mandatory ||
+            return VideoCompatibility == BrowserCompatibility.ConversionMandatory ||
+                   AudioCompatibility == BrowserCompatibility.ConversionMandatory ||
+                   InstrumentalCompatibility == BrowserCompatibility.ConversionMandatory ||
+                   VocalsCompatibility == BrowserCompatibility.ConversionMandatory ||
                    Alerts.Any(a => a.Level == AlertLevel.Fatal);
         }
     }

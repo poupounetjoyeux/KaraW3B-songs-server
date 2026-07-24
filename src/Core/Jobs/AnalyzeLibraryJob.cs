@@ -209,20 +209,32 @@ namespace KaraW3B.Server.Songs.Core.Jobs
 
         private static async Task CheckSongFiles(IFFmpegService ffmpegService, DbSong song, CancellationToken cancellationToken)
         {
-            await CheckSongFile(ffmpegService, song, song.Audio, FileType.Audio, cancellationToken);
-            await CheckSongFile(ffmpegService, song, song.Video, FileType.Video, cancellationToken);
-            await CheckSongFile(ffmpegService, song, song.Cover, FileType.Cover, cancellationToken);
-            await CheckSongFile(ffmpegService, song, song.Background, FileType.Background, cancellationToken);
-            await CheckSongFile(ffmpegService, song, song.Vocals, FileType.Vocals, cancellationToken);
-            await CheckSongFile(ffmpegService, song, song.Instrumental, FileType.Instrumental, cancellationToken);
+            await CheckSongFile(ffmpegService, song, FileType.Audio, cancellationToken);
+            await CheckSongFile(ffmpegService, song, FileType.Video, cancellationToken);
+            await CheckSongFile(ffmpegService, song, FileType.Cover, cancellationToken);
+            await CheckSongFile(ffmpegService, song, FileType.Background, cancellationToken);
+            await CheckSongFile(ffmpegService, song, FileType.Vocals, cancellationToken);
+            await CheckSongFile(ffmpegService, song, FileType.Instrumental, cancellationToken);
         }
 
         private static async Task CheckSongFile(IFFmpegService ffmpegService, DbSong song,
-            string fileValue, FileType fileType, CancellationToken cancellationToken)
+            FileType fileType, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(fileValue))
+            if (!CheckSongFileExistence(song, fileType))
             {
+                song.SetBrowserCompatibilityStatus(fileType, BrowserCompatibility.NotChecked);
                 return;
+            }
+
+            await CheckSongFileBrowserCompatibility(ffmpegService, song, fileType, cancellationToken);
+        }
+
+        private static bool CheckSongFileExistence(DbSong song, FileType fileType)
+        {
+            var filePath = song.GetSongFilePath(fileType);
+            if (string.IsNullOrEmpty(filePath))
+            {
+                return false;
             }
 
             if (!song.SongFileExist(fileType))
@@ -231,49 +243,50 @@ namespace KaraW3B.Server.Songs.Core.Jobs
                 {
                     Level = AlertLevel.Error,
                     Type = AlertType.File,
-                    Message = $"The {fileType} file '{fileValue}' doesn't exist on server"
+                    Message = $"The {fileType} file '{filePath}' doesn't exist on server"
                 });
-                return;
+                return false;
             }
 
+            return true;
+        }
+
+        private static async Task CheckSongFileBrowserCompatibility(IFFmpegService ffmpegService, DbSong song, FileType fileType, CancellationToken cancellationToken)
+        {
             if (fileType is FileType.Cover or FileType.Background)
             {
                 return;
             }
 
+            BrowserCompatibility browserCompatibility;
             var filePath = song.GetSongFilePath(fileType);
-            ConversionStatus conversionStatus;
-            if (fileType == FileType.Video)
+            if (string.IsNullOrEmpty(filePath))
             {
-                conversionStatus = await ffmpegService.GetVideoCompatibilityAsync(filePath, cancellationToken);
-                song.VideoConversion = conversionStatus;
+                browserCompatibility = BrowserCompatibility.NotChecked;
             }
             else
             {
-                conversionStatus = await ffmpegService.GetAudioCompatibilityAsync(filePath, cancellationToken);
-                switch (fileType)
+                if (fileType == FileType.Video)
                 {
-                    case FileType.Audio:
-                        song.AudioConversion = conversionStatus;
-                        break;
-                    case FileType.Instrumental:
-                        song.InstrumentalConversion = conversionStatus;
-                        break;
-                    case FileType.Vocals:
-                        song.VocalsConversion = conversionStatus;
-                        break;
+                    browserCompatibility = await ffmpegService.GetVideoCompatibilityAsync(filePath, cancellationToken);
+                }
+                else
+                {
+                    browserCompatibility = await ffmpegService.GetAudioCompatibilityAsync(filePath, cancellationToken);
                 }
             }
 
-            if (conversionStatus != ConversionStatus.Compatible)
+            song.SetBrowserCompatibilityStatus(fileType, browserCompatibility);
+
+            if (browserCompatibility != BrowserCompatibility.Compatible)
             {
                 song.Alerts.Add(new DbSongAlert
                 {
-                    Level = conversionStatus == ConversionStatus.Mandatory ? AlertLevel.Error : AlertLevel.Warning,
+                    Level = browserCompatibility == BrowserCompatibility.ConversionMandatory ? AlertLevel.Error : AlertLevel.Warning,
                     Type = AlertType.File,
-                    Message = conversionStatus == ConversionStatus.Mandatory
-                        ? $"The {fileType} file '{fileValue}' is not compatible with WEB. Please convert it!"
-                        : $"The {fileType} file '{fileValue}' may be not fully compatible with WEB. It's recommended to convert it"
+                    Message = browserCompatibility == BrowserCompatibility.ConversionMandatory
+                        ? $"The {fileType} file is not compatible with WEB. Please convert it!"
+                        : $"The {fileType} file may be not fully compatible with WEB. It's recommended to convert it"
                 });
             }
         }

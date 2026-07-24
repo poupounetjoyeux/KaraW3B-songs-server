@@ -110,14 +110,13 @@ namespace KaraW3B.Server.Songs.Host.Controllers
                 return NotFound($"The {fileType} file doesn't exist for song with ID {songId}");
             }
 
-            var streamResult = await _songsProvider.GetSongFileStream(song, fileType, cancellationToken);
-            if (streamResult == null)
+            if (!song.IsSongFileCompatible(fileType))
             {
                 return BadRequest(
-                    $"The song {songId} has no file of type {fileType}");
+                    $"The file {fileType} for song {song.Id} isn't web player compatible");
             }
 
-            return streamResult;
+            return await _songsProvider.GetSongFileStream(song, fileType, cancellationToken);
         }
     }
 }

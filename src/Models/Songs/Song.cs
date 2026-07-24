@@ -217,6 +217,26 @@ namespace KaraW3B.Server.Songs.Models.Songs
         /// </summary>
         public DateTime LastParsedTime { get; set; }
 
+        /// <summary>
+        ///     The audio file compatibility status with web browsers
+        /// </summary>
+        public BrowserCompatibility AudioCompatibility { get; set; }
+
+        /// <summary>
+        ///     The video file compatibility status with web browsers
+        /// </summary>
+        public BrowserCompatibility VideoCompatibility { get; set; }
+
+        /// <summary>
+        ///     The vocals file compatibility status with web browsers
+        /// </summary>
+        public BrowserCompatibility VocalsCompatibility { get; set; }
+
+        /// <summary>
+        ///     The instrumental file compatibility status with web browsers
+        /// </summary>
+        public BrowserCompatibility InstrumentalCompatibility { get; set; }
+
         #endregion
     }
 }
